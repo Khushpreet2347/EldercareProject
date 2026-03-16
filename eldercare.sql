@@ -91,3 +91,17 @@ CREATE TABLE Report (
     generatedAt DATE NOT NULL,
     content MEDIUMTEXT NOT NULL
 );
+
+
+
+INSERT INTO Manager VALUES
+('M000001', 'Sarah', 'Lee', 'sarah.lee@careops.com', '6045551200', 'hashed_password_1');
+INSERT INTO Caregiver VALUES
+('C000001', 'Anna', 'Lopez', 'anna.lopez@careops.com', '6045553000'),
+('C000002', 'Michael', 'Nguyen', 'michael.nguyen@careops.com', '6045553001'),
+('C000003', 'Priya', 'Patel', 'priya.patel@careops.com', '6045553002');
+INSERT INTO Resident VALUES
+('HCN1000001', 'John', 'Peterson', '1942-05-10', 'john.peterson@email.com', '6045552000', NULL, 'Emily', '6045559001'),
+('HCN1000002', 'Mary', 'Williams', '1938-09-22', 'mary.williams@email.com', '6045552001', NULL, 'David', '6045559002'),
+('HCN1000003', 'Robert', 'Brown', '1945-03-18', 'robert.brown@email.com', '6045552002', NULL, 'Linda', '6045559003'),
+('HCN1000004', 'Alice', 'Johnson', '1940-12-02', 'alice.johnson@email.com', '6045552003', NULL, 'Kevin', '6045559004');
