@@ -42,8 +42,8 @@ CREATE TABLE Assignment (
 CREATE TABLE HealthRecord (
     recordID INT PRIMARY KEY AUTO_INCREMENT,
     HCN CHAR(10) NOT NULL,
-    entryDate VARCHAR(25) NOT NULL CHECK (entryDate <= CURRENT_DATE),
-    entryTime VARCHAR(50) NOT NULL,
+    entryDate DATE NOT NULL CHECK (entryDate <= CURRENT_DATE),
+    entryTime TIME (50) NOT NULL,
     note MEDIUMTEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (HCN) REFERENCES Resident(HCN) ON DELETE CASCADE
@@ -76,15 +76,7 @@ CREATE TABLE ConditionRecord (
     FOREIGN KEY (recordID) REFERENCES HealthRecord(recordID) ON DELETE CASCADE
 );
 
-CREATE TABLE TrendAnalyzer (
-    declineThreshold DOUBLE,
-    windowDays INT
-);
 
-CREATE TABLE ReportGenerator (
-    month INT,
-    year INT
-);
 
 CREATE TABLE Report (
     reportID INT PRIMARY KEY AUTO_INCREMENT,
