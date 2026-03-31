@@ -51,7 +51,8 @@ CREATE TABLE HealthRecord (
 
 CREATE TABLE VitalSigns (
     recordID INT PRIMARY KEY,
-    bloodPressure INT NOT NULL CHECK (bloodPressure > 0),
+    systolic INT NOT NULL CHECK (systolic BETWEEN 50 AND 250),
+    diastolic INT NOT NULL CHECK (diastolic BETWEEN 30 AND 150),
     bloodSugar INT NOT NULL CHECK (bloodSugar > 0),
     temperature DECIMAL(4,1) NOT NULL CHECK (temperature > 0),
     heartRate INT NOT NULL CHECK (heartRate > 0),
@@ -63,6 +64,7 @@ CREATE TABLE MedicationEntry (
     recordID INT NOT NULL,
     mName VARCHAR(25) NOT NULL,
     dose DOUBLE NOT NULL CHECK (dose > 0),
+    administeredTime TIME NOT NULL, 
     status ENUM('Given', 'Late', 'Missed') NOT NULL,
     note MEDIUMTEXT,
     FOREIGN KEY (recordID) REFERENCES HealthRecord(recordID) ON DELETE CASCADE
@@ -113,13 +115,17 @@ CREATE INDEX idx_caregiver_name ON Caregiver(fName, lName);
 CREATE INDEX idx_caregiver_workid ON Caregiver(workID);
 
 CREATE INDEX idx_health_date ON HealthRecord(entryDate);
+CREATE INDEX idx_health_hcn ON HealthRecord(HCN);
 
 CREATE INDEX idx_med_name ON MedicationEntry(mName);
+CREATE INDEX idx_med_record ON MedicationEntry(recordID);
 
 CREATE INDEX idx_assignment_hcn ON Assignment(HCN);
 CREATE INDEX idx_assignment_workid ON Assignment(workID);
 
 CREATE INDEX idx_alert_hcn ON Alert(HCN);
+
+CREATE INDEX idx_vital_record ON VitalSigns(recordID);
 
 INSERT INTO Manager VALUES
 ('M000001', 'Sarah', 'Lee', 'sarah.lee@careops.com', '6045551200', 'hashed_password_1');
