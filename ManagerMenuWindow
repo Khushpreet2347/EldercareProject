@@ -1,0 +1,1019 @@
+package GUIPackage;
+
+import javax.swing.*;
+import javax.swing.event.ListSelectionEvent;
+import javax.swing.event.ListSelectionListener;
+import javax.swing.table.DefaultTableModel;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+
+public class ManagerMenuWindow
+{
+
+    //MAIN MENU PANEL COMPONENTS | mm
+    private JPanel mainMenuPanel;
+    private JButton mmProfileButton;
+    private JButton mmRecordsButton;
+    private JButton mmActivitiesButton;
+    private JButton mmReportsButton;
+    private DefaultListModel<String> mmListModel;
+    private JList<String> mmSelectionList;
+    private JButton mmLogoutButton;
+    private JLabel mmTitleLabel;
+    private JLabel mmLogoLabel;
+    private JLabel mmIconLabel;
+
+    //PROFILE SEARCH PANEL COMPONENTS | ps
+    private JPanel profileSearchPanel;
+    private ButtonGroup profileSearchRadioGroup;
+    private JRadioButton psCaregiverRadioButton;
+    private JRadioButton psResidentRadioButton;
+    private JRadioButton psManagerRadioButton;
+    private JTextField psNameTextBox;
+    private JTextField psIDTextBox;
+    private JButton psSearchButton;
+    private JButton psClearButton;
+    private DefaultListModel<String> psListModel;
+    private JList psResultList;
+    private JSeparator psSeparator;
+    private JLabel psTitleLabel;
+    private JLabel psNameLabel;
+    private JLabel psIDLabel;
+    private JToolBar psToolBar;
+    private JButton psToolBarBackButton;
+
+    //PROFILE MANAGEMENT PANEL COMPONENTS | pm
+    private JPanel profileManagementPanel;
+    private JLabel pmTitleLabel;
+    private JRadioButton pmModifyRadioButton;
+    private JRadioButton pmDeleteRadioButton;
+    private JRadioButton pmCreateRadioButton;
+    private JComboBox pmTypeComboBox;
+    private JTextField pmSearchTextBox;
+    private JButton pmSearchButton;
+    private JSeparator pmSeparator;
+    private JTextField pmIDTextBox;
+    private JTextField pmEContactTextBox;
+    private JTextField pmEPhoneTextBox;
+    private JTextField pmDOBTextBox;
+    private JTextField pmFNameTextBox;
+    private JTextField pmLNameTextBox;
+    private JTextField pmEmailTextBox;
+    private JTextField pmPhoneTextBox;
+    private JLabel pmNameLabel;
+    private JLabel pmIDLabel;
+    private JLabel pmFNameLabel;
+    private JLabel pmLNameLabel;
+    private JLabel pmEmailLabel;
+    private JLabel pmPhoneLabel;
+    private JLabel pmDOBLabel;
+    private JLabel pmEContactLabel;
+    private JLabel pmEPhoneLabel;
+    private JLabel pmPFPLabel;
+    private JSeparator pmSeparatorTwo;
+    private JTextField pmAssignmentTextBox;
+    private JButton pmRemoveButton;
+    private JButton pmAddButton;
+    private DefaultListModel<String> pmListModel;
+    private JList pmAssignmentList;
+    private JButton pmClearButton;
+    private JSeparator pmSeparatorThree;
+    private JLabel pmAssignmentLabel;
+    private JButton pmSaveButton;
+    private JToolBar pmToolBar;
+    private JButton pmToolBarBackButton;
+
+    //MANAGER PROFILE EDIT PANEL COMPONENTS | me
+    private JPanel managerEditPanel;
+    private JLabel meTitleLabel;
+    private JTextField meFNameTextBox;
+    private JTextField meLNameTextBox;
+    private JTextField meEmailTextBox;
+    private JTextField meIDTextBox;
+    private JLabel meIDLabel;
+    private JLabel meFNameLabel;
+    private JLabel meLNameLabel;
+    private JLabel meEmailLabel;
+    private JTextField mePhoneTextBox;
+    private JLabel mePhoneLabel;
+    private JSeparator meSeparator;
+    private JButton meSaveButton;
+    private JButton meClearButton;
+    private JToolBar meToolBar;
+    private JButton meToolBarBackButton;
+
+    //RECORD SEARCH PANEL COMPONENTS | rs
+    private JPanel recordSearchPanel;
+    private JToolBar rsToolBar;
+    private ButtonGroup healthRecordCheckGroup;
+    private JLabel rsTitleLabel;
+    private JCheckBox rsDateCheckBox;
+    private JTextField rsDateTextbox;
+    private JSeparator rsSeparator;
+    private JSplitPane rsSpiltPane;
+    private DefaultListModel<String> rsListModel;
+    private JList rsResultList;
+    private DefaultTableModel rsTableModel;
+    private JTable rsResultTable;
+    private JTextField rsNameTextBox;
+    private JTextField rsMedStatusTextbox;
+    private JCheckBox rsMedStatusCheckBox;
+    private JCheckBox rsNameCheckBox;
+    private JButton rsClearButton;
+    private JButton rsSearchButton;
+    private JButton rsToolBarBackButton;
+
+    //RECORD MANAGEMENT PANEL | rm
+    private JPanel recordManagementPanel;
+    private JTabbedPane rmTabbedPanel;
+    private JPanel rmInputTab;
+    private JPanel rmEditTab;
+    private JPanel rmDeleteTab;
+    private JToolBar rmToolBar;
+    private JButton rmToolBarBackButton;
+    //INPUT TAB | iTab
+
+    //EDIT TAB | eTab
+
+    //DELETE TAB | dTab
+    private JLabel dTabTitleLabel;
+    private JTextField dTabMedNameTextBox;
+    private JTextField dTabNameTextBox;
+    private JTextField dTabDateTextBox;
+    private JComboBox dTabMedStatusComboBox;
+    private JCheckBox dTabNameCheckBox;
+    private JCheckBox dTabDateCheckBox;
+    private JCheckBox dTabMedNameCheckBox;
+    private JCheckBox dTabMedStatusCheckBox;
+    private JButton dTabClearButton;
+    private JButton dTabSearchButton;
+    private JSeparator dTabSeparator;
+    private DefaultListModel<String> dTabListModel;
+    private JList dTabResultList;
+
+    //ACTIVITY SEARCH PANEL | as
+    private JPanel activitySearch;
+    private JPanel reportGeneratePanel;
+    private JLabel asTitleLabel;
+    private JTextField asSearchTextBox;
+    private JLabel asActivityTitleLabel;
+    private JSeparator asSeparator;
+    private JSplitPane asSpiltPane;
+    private DefaultListModel<String> asListModel;
+    private JList asResultList;
+    private DefaultTableModel asTableModel;
+    private JTable asResultTable;
+    private JButton asClearButton;
+    private JButton asSearchButton;
+    private JToolBar asToolBar;
+    private JButton asToolBarBackButton;
+
+    //ACTIVITY MANAGEMENT PANEL | am
+    private JPanel activityManagementPanel;
+    private JLabel amTitleLabel;
+    private JLabel amTitleSearchLabel;
+    private JRadioButton amModifyRadioButton;
+    private JRadioButton amDeleteRadioButton;
+    private JRadioButton amCreateRadioButton;
+    private JTextField amSearchTextBox;
+    private JButton amSearchButton;
+    private JSeparator amSeparator;
+    private JTextField amTitleTextBox;
+    private JLabel amActivityTitleLabel;
+    private JTextField amDateTextBox;
+    private JLabel amDateLabel;
+    private JLabel amTimeLabel;
+    private JTextField amTimeTextBox;
+    private JLabel amDescriptionLabel;
+    private JLabel amNotesLabel;
+    private JLabel amStatusLabel;
+    private JComboBox amStatusComboBox;
+    private JSeparator amSeparatorTwo;
+    private JButton amSaveButton;
+    private JButton amClearButton;
+    private JTextArea amDescriptionTextArea;
+    private JTextArea amNotesTextArea;
+    private JToolBar amToolBar;
+    private JButton amToolBarBackButton;
+
+    //REPORT GENERATE PANEL | rg
+    private JLabel rgTitleLabel;
+    private JSplitPane rgSplitPane;
+    private DefaultTableModel rgLeftTableModel;
+    private JTable rgLeftTable;
+    private DefaultTableModel rgRightTableModel;
+    private JTable rgRightTable;
+    private JButton rgGenerateButton;
+    private JButton rgClearButton;
+    private JTextField rgYearTextBox;
+    private JTextField rgMonthTextBox;
+    private JCheckBox rgMonthCheckBox;
+    private JCheckBox rgYearCheckBox;
+    private JRadioButton rgUserMedRadioButton;
+    private JRadioButton rgHealthIrregRadioButton;
+    private JToolBar rgToolBar;
+    private JButton rgToolBarBackButton;
+
+    //Declare a root card panel, other card panels will attach to the root
+    private JPanel rootPanel;
+    private ButtonGroup activityManagementRadioGroup;
+    private ButtonGroup profileManagementRadioGroup;
+    private ButtonGroup reportGenerateRadioGroup;
+    CardLayout menuCardLayout = new CardLayout();
+
+    //Declare JFrame
+    JFrame managerMenuWindowFrame = new JFrame();
+
+    //ADDITIONAL METHODS FOR MENU WINDOWS
+    //MAIN MENU METHODS | mm ///////////////////////////////////////////////////////////////////////////////////
+
+    //Method to update the main menu JList selection of options
+    private void setMainMenuList(String[] menuOptions)
+    {
+        mmListModel.clear();
+        for(String mo : menuOptions)
+        {
+            mmListModel.addElement(mo);
+        }
+    }
+
+    //Class holding methods for JFrame
+    public ManagerMenuWindow()
+    {
+
+        //METHODS FOR MAIN MENU | mm ///////////////////////==////////////////////////////////////////////////////////////
+
+        //SET UP FOR CARD SWITCHING IN JFRAME
+        //Set card layout type in the root panel, then add panels with constraints
+        rootPanel.setLayout(menuCardLayout);
+        rootPanel.add(mainMenuPanel, "MAIN_MENU");
+        rootPanel.add(profileSearchPanel, "PROFILE_SEARCH");
+        rootPanel.add(profileManagementPanel, "PROFILE_MANAGEMENT");
+        rootPanel.add(managerEditPanel, "PROFILE_MANAGER_EDIT");
+        rootPanel.add(recordSearchPanel, "RECORD_SEARCH");
+        rootPanel.add(recordManagementPanel, "RECORD_MANAGEMENT");
+        rootPanel.add(activitySearch, "ACTIVITY_SEARCH");
+        rootPanel.add(activityManagementPanel, "ACTIVITY_MANAGEMENT");
+        rootPanel.add(reportGeneratePanel, "REPORT_GENERATE");
+
+        //SHOW MAIN MENU TO USER
+        menuCardLayout.show(rootPanel, "MAIN_MENU");
+
+        //SWITCHING "CARDS"/WINDOWS IN THE MAIN MENU
+        //Declare a list model (allows a list to be edited)
+        mmListModel = new DefaultListModel<>();
+        mmSelectionList.setModel(mmListModel);
+
+        //Menu arrays for option display in JList (Buttons will use these)
+        String profileOptions[] = {"Profile Search", "Profile Management", "Edit Your Profile"};
+        String recordOptions[] = {"Record Search", "Record Management"};
+        String activityOptions[] = {"Activity Search", "Activity Management"};
+        String reportOptions[] = {"Generate Report"};
+
+        //Button Functions to change JList sub menu options
+        mmProfileButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                setMainMenuList(profileOptions);
+            }
+        });
+
+        mmRecordsButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                setMainMenuList(recordOptions);
+            }
+        });
+
+        mmActivitiesButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                setMainMenuList(activityOptions);
+            }
+        });
+
+        mmReportsButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                setMainMenuList(reportOptions);
+            }
+        });
+
+        //Menu list options
+        //Menu sub options after button option selection, each selection will change cards and bring the user
+        //to their desired screen ex. User wishes to access Profile Search window, they will click
+        //the Profile button, then the JList will display Profile sub options, user will select
+        //Profile Search from JList and JFrame will switch cards to show Profile Search content
+        mmSelectionList.addListSelectionListener(new ListSelectionListener()
+        {
+            @Override
+            public void valueChanged(ListSelectionEvent e)
+            {
+
+                //Check user selection in JList if there is a selection at all
+                String subMenuOption = mmSelectionList.getSelectedValue();
+                if(subMenuOption == null) { return; }
+
+                //Switch cards in frame based on selection
+                switch(subMenuOption)
+                {
+
+                    case "Profile Search":
+                            menuCardLayout.show(rootPanel, "PROFILE_SEARCH");
+                        break;
+                    case "Profile Management":
+                            menuCardLayout.show(rootPanel, "PROFILE_MANAGEMENT");
+                        break;
+                    case "Edit Your Profile":
+                            menuCardLayout.show(rootPanel, "PROFILE_MANAGER_EDIT");
+                        break;
+                    case "Record Search":
+                            menuCardLayout.show(rootPanel, "RECORD_SEARCH");
+                        break;
+                    case "Record Management":
+                            menuCardLayout.show(rootPanel, "RECORD_MANAGEMENT");
+                        break;
+                    case "Activity Search":
+                            menuCardLayout.show(rootPanel, "ACTIVITY_SEARCH");
+                        break;
+                    case "Activity Management":
+                            menuCardLayout.show(rootPanel, "ACTIVITY_MANAGEMENT");
+                        break;
+                    case "Generate Report":
+                            menuCardLayout.show(rootPanel, "REPORT_GENERATE");
+                        break;
+                }
+            }
+        });
+
+        //LOG OUT USER BUTTON
+        mmLogoutButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                managerMenuWindowFrame.dispose();
+                LogoutWindow.openLogoutWindow();
+            }
+        });
+
+        //METHODS FOR PROFILE SEARCH | ps ///////////////////////////////////////////////////////////////////////////////////
+
+        //TOOLBAR BACK BUTTON METHOD
+        psToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //Declare a list model (allows a list to be edited)
+        psListModel = new DefaultListModel<>();
+        psResultList.setModel(psListModel);
+
+        //CLEAR INPUT BUTTON
+        psClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                psResidentRadioButton.setSelected(true);
+                psNameTextBox.setText("");
+                psIDTextBox.setText("");
+                psListModel.clear();
+            }
+        });
+
+        //SEARCH PROFILES BUTTON
+        psSearchButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(psNameTextBox.getText().isEmpty() && psIDTextBox.getText().isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter either a name or ID");
+                }
+
+                psListModel.clear();
+
+            }
+        });
+
+        //METHODS FOR PROFILE MANAGEMENT | pm ///////////////////////////////////////////////////////////////////////////////////
+
+        //TOOLBAR BACK BUTTON METHOD
+        pmToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //POPULATE PROFILE TYPE COMBOBOX
+        pmTypeComboBox.addItem("Resident");
+        pmTypeComboBox.addItem("Caregiver");
+        pmTypeComboBox.setSelectedIndex(-1);
+
+        //DISABLE RESIDENT TEXTBOXES IF COMBO BOX TYPE SELECTED IS CAREGIVER
+        pmDOBTextBox.setEnabled(false);
+        pmEContactTextBox.setEnabled(false);
+        pmEPhoneTextBox.setEnabled(false);
+
+        //ENABLE RESIDENT TEXTBOXES IF COMBO BOX TYPE SELECTED IS RESIDENT
+        pmTypeComboBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                if(pmTypeComboBox.getSelectedItem().equals("Resident"))
+                {
+                    pmDOBTextBox.setEnabled(true);
+                    pmEContactTextBox.setEnabled(true);
+                    pmEPhoneTextBox.setEnabled(true);
+                    pmAssignmentLabel.setText("Caregivers:");
+                }
+                else if(pmTypeComboBox.getSelectedItem().equals("Caregiver"))
+                {
+                    pmDOBTextBox.setEnabled(false);
+                    pmEContactTextBox.setEnabled(false);
+                    pmEPhoneTextBox.setEnabled(false);
+                    pmAssignmentLabel.setText("Residents:");
+                }
+            }
+        });
+
+        //Declare a list model (allows a list to be edited)
+        pmListModel = new DefaultListModel<>();
+        pmAssignmentList.setModel(pmListModel);
+
+        //CLEAR INPUT BUTTON
+        pmClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                pmCreateRadioButton.setSelected(true);
+                pmTypeComboBox.setSelectedIndex(-1);
+                pmSearchTextBox.setText("");
+                pmIDTextBox.setText("");
+                pmFNameTextBox.setText("");
+                pmLNameTextBox.setText("");
+                pmEmailTextBox.setText("");
+                pmPhoneTextBox.setText("");
+                pmDOBTextBox.setText("");
+                pmEContactTextBox.setText("");
+                pmEPhoneTextBox.setText("");
+                //PFP SELECTION CLEAR HERE
+
+
+
+
+
+
+                pmAssignmentTextBox.setText("");
+                pmListModel.clear();
+            }
+        });
+
+        //SEARCH PROFILES FOR MANAGING BUTTON
+        pmSearchButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(pmSearchTextBox.getText().isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter a name");
+                }
+
+            }
+        });
+
+        //REMOVE A ASSIGNMENT BETWEEN RESIDENT/CAREGIVER
+        //(CHECK IF NAME EXISTS)
+        pmRemoveButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(pmAssignmentTextBox.getText().isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter a name");
+                }
+            }
+        });
+
+        //ADD A ASSIGNMENT BETWEEN RESIDENT/CAREGIVER
+        //(CHECK IF NAME EXISTS)
+        pmAddButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(pmAssignmentTextBox.getText().isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter a name");
+                }
+            }
+        });
+
+        //SAVE CHANGES TO DATABASE (MODIFY SQL)
+        pmSaveButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(pmIDTextBox.getText().isEmpty() && pmFNameTextBox.getText().isEmpty() && pmLNameTextBox.getText().isEmpty() && pmEmailTextBox.getText().isEmpty()
+                        && pmPhoneTextBox.getText().isEmpty() && pmDOBTextBox.getText().isEmpty() && pmEContactTextBox.getText().isEmpty() && pmEPhoneTextBox.getText().isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter at least one input");
+                }
+            }
+        });
+
+        //METHODS FOR MANAGER PROFILE EDIT | me ///////////////////////////////////////////////////////////////////////////////////
+
+        //LOAD CURRENT MANAGER INFO
+
+        //DISABLE WORK ID TEXTBOX (Manager can't change their work ID)
+        meIDTextBox.setEnabled(false);
+
+        //CLEAR INPUT BUTTON
+        meClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                meFNameLabel.setText("");
+                meLNameLabel.setText("");
+                meEmailTextBox.setText("");
+                mePhoneTextBox.setText("");
+            }
+        });
+
+        //SAVE ACCOUNT MODIFICATIONS BUTTON
+        meSaveButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+
+            }
+        });
+
+        //TOOLBAR BACK BUTTON METHOD
+        meToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //METHODS FOR RECORD SEARCH | rs ///////////////////////////////////////////////////////////////////////////////////
+
+        //TOOLBAR BACK BUTTON METHOD
+        rsToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //ENABLE SEARCH TEXTBOXES BASED ON CHECKBOXES
+        rsNameTextBox.setEnabled(false);
+        rsDateTextbox.setEnabled(false);
+        rsMedStatusTextbox.setEnabled(false);
+
+        rsNameCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                rsNameTextBox.setEnabled(rsNameCheckBox.isSelected());
+            }
+        });
+
+        rsDateCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                rsDateTextbox.setEnabled(rsDateCheckBox.isSelected());
+            }
+        });
+
+        rsMedStatusCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                rsMedStatusTextbox.setEnabled(rsMedStatusCheckBox.isSelected());
+            }
+        });
+
+        //Declare a list model (allows a list to be edited)
+        rsListModel = new DefaultListModel<>();
+        rsResultList.setModel(rsListModel);
+
+        //Declare a table model (allows a table to be edited)
+        rsTableModel = new DefaultTableModel();
+        rsResultTable.setModel(rsTableModel);
+
+        //CLEAR INPUT BUTTON
+        rsClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                healthRecordCheckGroup.clearSelection();
+                rsNameTextBox.setText("");
+                rsDateTextbox.setText("");
+                rsMedStatusTextbox.setText("");
+                rsListModel.clear();
+                rsTableModel.setColumnCount(0);
+                rsTableModel.setRowCount(0);
+            }
+        });
+
+        //SEARCH RECORDS BUTTON
+        rsSearchButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(rsNameTextBox.getText().isEmpty() && rsNameCheckBox.isSelected()
+                        && rsDateTextbox.getText().isEmpty() && rsDateCheckBox.isSelected() && rsMedStatusTextbox.getText().isEmpty() && rsMedStatusCheckBox.isSelected())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter input");
+                }
+                else if((rsNameTextBox.getText().isEmpty() && rsNameCheckBox.isSelected())
+                        || (rsDateTextbox.getText().isEmpty() && rsDateCheckBox.isSelected()) || (rsMedStatusTextbox.getText().isEmpty() && rsMedStatusCheckBox.isSelected()))
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter input");
+                }
+            }
+        });
+
+        //METHODS FOR RECORD MANAGEMENT | rm ///////////////////////////////////////////////////////////////////////////////////
+
+        //TOOLBAR BACK BUTTON METHOD
+        rmToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //INSERT TAB +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //EDIT TAB +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+        //DELETE TAB +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+        //POPULATE MEDICATION STATUS COMBO BOX
+        dTabMedStatusComboBox.addItem("Given");
+        dTabMedStatusComboBox.addItem("Late");
+        dTabMedStatusComboBox.addItem("Missed");
+        dTabMedStatusComboBox.setSelectedIndex(-1);
+
+        //ENABLE TEXTBOXES BASED ON CHECKED BOXES
+        dTabNameTextBox.setEnabled(false);
+        dTabDateTextBox.setEnabled(false);
+        dTabMedNameTextBox.setEnabled(false);
+        dTabMedStatusComboBox.setEnabled(false);
+
+        dTabNameCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                dTabNameTextBox.setEnabled(dTabNameCheckBox.isSelected());
+            }
+        });
+
+        dTabDateCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                dTabDateTextBox.setEnabled(dTabDateCheckBox.isSelected());
+            }
+        });
+
+        dTabMedNameCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                dTabMedNameTextBox.setEnabled(dTabMedNameCheckBox.isSelected());
+            }
+        });
+        dTabMedStatusCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                dTabMedStatusComboBox.setEnabled(dTabMedStatusCheckBox.isSelected());
+            }
+        });
+
+        //Declare a list model (allows a list to be edited)
+        dTabListModel = new DefaultListModel<>();
+        dTabResultList.setModel(dTabListModel);
+
+        //CLEAR INPUT BUTTON
+        dTabClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                dTabNameCheckBox.setSelected(false);
+                dTabDateCheckBox.setSelected(false);
+                dTabMedStatusCheckBox.setSelected(false);
+                dTabMedStatusComboBox.setSelectedIndex(-1);
+                dTabNameTextBox.setText("");
+                dTabDateTextBox.setText("");
+                dTabMedNameTextBox.setText("");
+                dTabListModel.clear();
+            }
+        });
+
+        //SEARCH RECORD TO DELETE BUTTON
+        dTabSearchButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(dTabNameCheckBox.isSelected() && dTabNameTextBox.getText().isEmpty() && dTabDateCheckBox.isSelected()
+                        && dTabDateTextBox.getText().isEmpty() && dTabMedNameCheckBox.isSelected() && dTabMedNameTextBox.getText().isEmpty()
+                        && dTabMedStatusCheckBox.isSelected() && dTabMedStatusComboBox.getSelectedIndex() == -1)
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter at least one input");
+                }
+                else if((dTabNameCheckBox.isSelected() && dTabNameTextBox.getText().isEmpty()) || (dTabDateCheckBox.isSelected()
+                        && dTabDateTextBox.getText().isEmpty()) || (dTabMedNameCheckBox.isSelected() && dTabMedNameTextBox.getText().isEmpty())
+                        || (dTabMedStatusCheckBox.isSelected() && dTabMedStatusComboBox.getSelectedIndex() == -1))
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter input fir checked fields");
+                }
+            }
+        });
+
+        //METHODS FOR ACTIVITY SEARCH | as ///////////////////////////////////////////////////////////////////////////////////
+
+        //TOOLBAR BACK BUTTON METHOD
+        asToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //Declare a list model (allows a list to be edited)
+        asListModel = new DefaultListModel<>();
+        asResultList.setModel(asListModel);
+
+        //Declare a table model (allows a table to be edited)
+        asTableModel = new DefaultTableModel();
+        asResultTable.setModel(asTableModel);
+
+        //CLEAR INPUT BUTTON
+        asClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                asSearchTextBox.setText("");
+                asListModel.clear();
+                asResultTable.removeAll();
+                asTableModel.setColumnCount(0);
+                asTableModel.setRowCount(0);
+            }
+        });
+
+        //SEARCH ACTIVITY BUTTON
+        asSearchButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //DETECT INPUT
+                if(asSearchTextBox.getText().isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter a title");
+                }
+            }
+        });
+
+        //METHODS FOR ACTIVITY MANAGEMENT | am ///////////////////////////////////////////////////////////////////////////////////
+
+        //TOOLBAR BACK BUTTON METHOD
+        amToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //POPULATE COMBO BOX
+        amStatusComboBox.addItem("Planned");
+        amStatusComboBox.addItem("Ongoing");
+        amStatusComboBox.addItem("Completed");
+        amStatusComboBox.addItem("Cancelled");
+        amStatusComboBox.setSelectedIndex(-1);
+
+        //DISABLE & ENABLE SEARCH BOX BASED ON RADIO BUTTON CHOICE
+        amCreateRadioButton.setSelected(true);
+        amSearchTextBox.setEnabled(false);
+
+        amModifyRadioButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                amSearchTextBox.setEnabled(amModifyRadioButton.isSelected());
+            }
+        });
+
+        amDeleteRadioButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                amSearchTextBox.setEnabled(amDeleteRadioButton.isSelected());
+            }
+        });
+
+        //CLEAR INPUT BUTTON
+        amClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                amCreateRadioButton.setSelected(true);
+                amSearchTextBox.setEnabled(false);
+                amTitleTextBox.setText("");
+                amDateTextBox.setText("");
+                amTimeTextBox.setText("");
+                amDescriptionTextArea.setText("");
+                amNotesTextArea.setText("");
+                amStatusComboBox.setSelectedIndex(-1);
+            }
+        });
+
+        //SEARCH ACTIVITY TO MANAGE BUTTON
+        amSaveButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                if(amCreateRadioButton.isSelected() && amTitleTextBox.getText().isEmpty() && amDateTextBox.getText().isEmpty() && amTimeTextBox.getText().isEmpty() && amDescriptionTextArea.getText().isEmpty() && amNotesTextArea.getText().isEmpty() && amStatusComboBox.getSelectedIndex() == -1)
+                {
+                    JOptionPane.showMessageDialog(null, "Please fill out all activity details");
+                }
+                else if(amCreateRadioButton.isSelected() && (amTitleTextBox.getText().isEmpty() || amDateTextBox.getText().isEmpty() || amTimeTextBox.getText().isEmpty() || amDescriptionTextArea.getText().isEmpty() || amNotesTextArea.getText().isEmpty() || amStatusComboBox.getSelectedIndex() == -1))
+                {
+                    JOptionPane.showMessageDialog(null, "Please fill out selected textboxes");
+                }
+            }
+        });
+
+        //METHODS FOR REPORT GENERATE | rg ///////////////////////////////////////////////////////////////////////////////////
+
+        //TOOLBAR BACK BUTTON METHOD
+        rgToolBarBackButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                menuCardLayout.show(rootPanel, "MAIN_MENU");
+                mmListModel.clear();
+            }
+        });
+
+        //ACTIVATE TEXT BOX FOR YEAR/MONTH
+        rgYearTextBox.setEnabled(false);
+        rgMonthTextBox.setEnabled(false);
+
+        rgYearCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                rgYearTextBox.setEnabled(rgYearCheckBox.isSelected());
+            }
+        });
+        rgMonthCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                rgMonthTextBox.setEnabled(rgMonthCheckBox.isSelected());
+            }
+        });
+
+        //Declare a table model (allows a table to be edited)
+        rgLeftTableModel = new DefaultTableModel();
+        rgLeftTable.setModel(rgLeftTableModel);
+
+        rgRightTableModel = new DefaultTableModel();
+        rgRightTable.setModel(rgRightTableModel);
+
+        //CLEAR INPUT BUTTON
+        rgClearButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                rgUserMedRadioButton.setSelected(true);
+                rgYearCheckBox.setSelected(false);
+                rgMonthCheckBox.setSelected(false);
+                rgYearTextBox.setText("");
+                rgMonthTextBox.setText("");
+                rgLeftTableModel.setColumnCount(0);
+                rgLeftTableModel.setRowCount(0);
+                rgRightTableModel.setColumnCount(0);
+                rgRightTableModel.setRowCount(0);
+            }
+        });
+
+        //GENERATE A REPORT BUTTON
+        rgGenerateButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                if((rgYearCheckBox.isSelected() && rgYearTextBox.getText().isEmpty()) && (rgMonthCheckBox.isSelected() && rgMonthTextBox.getText().isEmpty()))
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter information for the report");
+                }
+                else if((rgYearCheckBox.isSelected() && rgYearTextBox.getText().isEmpty()) || (rgMonthCheckBox.isSelected() && rgMonthTextBox.getText().isEmpty()))
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter information for the report for the selected fields");
+                }
+            }
+        });
+
+
+
+    }
+
+    //MainPackage.Main method for creating an object to attach form to
+    public static void openMainMenuWindow()
+    {
+        ManagerMenuWindow managerMenuObj = new ManagerMenuWindow();
+        managerMenuObj.callForm();
+    }
+
+    //Form structure to attach an object
+    public void callForm()
+    {
+
+        //Set up JFrame and Root Panel
+        managerMenuWindowFrame.setContentPane(rootPanel);
+        menuCardLayout.show(rootPanel, "MAIN_MENU");
+        managerMenuWindowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        managerMenuWindowFrame.setTitle("Care Ops | Main Menu");
+        managerMenuWindowFrame.setSize(1000, 950);
+        managerMenuWindowFrame.setLocationRelativeTo(null);
+        managerMenuWindowFrame.setVisible(true);
+
+    }
+
+}
