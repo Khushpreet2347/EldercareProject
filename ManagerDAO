@@ -1,0 +1,154 @@
+package DAOPackage;
+
+import java.sql.*;
+import java.util.*;
+
+import Connector.SQLConnection;
+import ClassPackage.Manager;
+
+import javax.swing.*;
+
+//This class creates objects from the database, acts as a bridge between the database and GUIs
+public class ManagerDAO
+{
+
+    //Method that returns a list of Manager objects to access data from
+    public List<Manager> getAllManagers()
+    {
+
+        //Declare a list of Manager objects
+        List<Manager> managers = new ArrayList<>();
+
+        //Connect to database
+        try
+        {
+            Connection con = SQLConnection.getConnection();
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery("SELECT * FROM Manager");
+
+            //Populate Manager objects
+            while(rs.next())
+            {
+                Manager manager = new Manager
+                    (
+                        rs.getString("workID"),
+                        rs.getString("fName"),
+                        rs.getString("lName"),
+                        rs.getString("email"),
+                        rs.getString("phoneNo"),
+                        rs.getString("passwordHash")
+                    );
+
+                //Add objects to List
+                managers.add(manager);
+            }
+
+            //Close resources
+            rs.close();
+            stmt.close();
+            con.close();
+
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        //Return list of Manager objects
+        return managers;
+
+    }
+
+    //Method that returns one manager object to access data from
+    public Manager getOneManager(String inputWorkID, String inputFullName)
+    {
+
+        //Declare a Manager object
+        Manager manager = new Manager();
+
+        //Variables to save data to for the object
+        //int workID;
+        //String fName;
+        //String lName;
+        //String email;
+        //String phoneNo;
+
+        //Connect to database
+        try
+        {
+
+            Connection con = SQLConnection.getConnection();
+            Statement stmt = con.createStatement();
+
+            //Search by WorkID
+            if(inputWorkID != null && !inputWorkID.trim().isEmpty())
+            {
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Manager WHERE workID = ?");
+
+                while (rs.next())
+                {
+                    manager = new Manager
+                    (
+                    rs.getString("workID"),
+                    rs.getString("fName"),
+                    rs.getString("lName"),
+                    rs.getString("email"),
+                    rs.getString("phoneNo"),
+                    rs.getString("passwordHash")
+                    );
+                }
+
+                return manager;
+            }
+
+            //Search by full name
+            if(inputFullName != null && !inputFullName.trim().isEmpty())
+            {
+
+                //Split the full name into a first and last name
+                String[] nameSplit = inputFullName.trim().split(" ");
+
+                //Check if user entered a full name
+                if(nameSplit.length < 2)
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter both a first and a last name");
+                    return null;
+                }
+
+                //Save split full name to separate variables
+                String fName = nameSplit[0];
+                String lName = nameSplit[1];
+
+                ResultSet rs = stmt.executeQuery("SELECT * FROM Manager WHERE fName = ? AND lName = ?");
+
+                while (rs.next())
+                {
+                    manager = new Manager
+                    (
+                    rs.getString("workID"),
+                    rs.getString("fName"),
+                    rs.getString("lName"),
+                    rs.getString("email"),
+                    rs.getString("phoneNo"),
+                    rs.getString("passwordHash")
+                    );
+                }
+
+                return manager;
+            }
+
+            //rs.close();
+            stmt.close();
+            con.close();
+
+        }
+        catch (SQLException e)
+        {
+            e.printStackTrace();
+        }
+
+        return null;
+
+    }
+
+}
