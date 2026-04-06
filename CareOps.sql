@@ -7,7 +7,7 @@ CREATE TABLE Manager (
     lName VARCHAR(25) NOT NULL,
     email VARCHAR(50) NOT NULL UNIQUE,
     phoneNo VARCHAR(15) NOT NULL,
-    passwordHash VARCHAR(255) NOT NULL
+    passwordHash STRING(255) NOT NULL
 );
 
 CREATE TABLE Resident (
@@ -47,6 +47,7 @@ CREATE TABLE HealthRecord (
     note MEDIUMTEXT,
     createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (HCN) REFERENCES Resident(HCN) ON DELETE CASCADE
+    
 );
 
 CREATE TABLE VitalSigns (
