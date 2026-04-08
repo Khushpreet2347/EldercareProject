@@ -27,7 +27,8 @@ CREATE TABLE Caregiver (
     fName VARCHAR(25) NOT NULL,
     lName VARCHAR(25) NOT NULL,
     email VARCHAR(50) NOT NULL UNIQUE,
-    phoneNo VARCHAR(15) NOT NULL
+    phoneNo VARCHAR(15) NOT NULL,
+    profileImage BLOB
 );
 
 CREATE TABLE Assignment (
