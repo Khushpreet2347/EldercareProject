@@ -67,6 +67,18 @@ FROM Resident r
 JOIN Assignment a ON r.HCN = a.HCN
 JOIN Caregiver c ON a.workID = c.workID;
 
+-- selecting resident details
+SELECT 
+    h.recordID,
+    h.HCN,
+    CONCAT(r.fName, ' ', r.lName) AS residentName,
+    h.entryDate,
+    h.entryTime,
+    h.note
+FROM HealthRecord h
+JOIN Resident r ON h.HCN = r.HCN
+WHERE r.fName LIKE ? OR r.lName LIKE ?;
+
 -- all reports
 SELECT * FROM Report;
 
