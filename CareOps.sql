@@ -84,7 +84,6 @@ CREATE TABLE ConditionRecord (
 CREATE TABLE Report (
     reportID INT PRIMARY KEY AUTO_INCREMENT,
     type ENUM('UserMedicationSummary', 'HealthIrregularitiesSummary') NOT NULL,
-    generatedAt DATE NOT NULL,
     content MEDIUMTEXT NOT NULL
 );
 
