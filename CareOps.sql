@@ -7,7 +7,7 @@ CREATE TABLE Manager (
     lName VARCHAR(25) NOT NULL,
     email VARCHAR(50) NOT NULL UNIQUE,
     phoneNo VARCHAR(15) NOT NULL,
-    passwordHash STRING(255) NOT NULL
+    passwordHash VARCHAR(255) NOT NULL
 );
 
 CREATE TABLE Resident (
@@ -46,7 +46,6 @@ CREATE TABLE HealthRecord (
     entryDate DATE NOT NULL,
     entryTime TIME(6) NOT NULL,
     note MEDIUMTEXT,
-    createdAt DATETIME DEFAULT CURRENT_TIMESTAMP,
     FOREIGN KEY (HCN) REFERENCES Resident(HCN) ON DELETE CASCADE
     
 );
@@ -132,9 +131,9 @@ CREATE INDEX idx_vital_record ON VitalSigns(recordID);
 INSERT INTO Manager VALUES
 ('M000001', 'Sarah', 'Lee', 'sarah.lee@careops.com', '6045551200', 'hashed_password_1');
 INSERT INTO Caregiver VALUES
-('C000001', 'Anna', 'Lopez', 'anna.lopez@careops.com', '6045553000'),
-('C000002', 'Michael', 'Nguyen', 'michael.nguyen@careops.com', '6045553001'),
-('C000003', 'Priya', 'Patel', 'priya.patel@careops.com', '6045553002');
+('C000001', 'Anna', 'Lopez', 'anna.lopez@careops.com', '6045553000', NULL),
+('C000002', 'Michael', 'Nguyen', 'michael.nguyen@careops.com', '6045553001', NULL),
+('C000003', 'Priya', 'Patel', 'priya.patel@careops.com', '6045553002', NULL);
 INSERT INTO Resident VALUES
 ('HCN1000001', 'John', 'Peterson', '1942-05-10', 'john.peterson@email.com', '6045552000', NULL, 'Emily', '6045559001'),
 ('HCN1000002', 'Mary', 'Williams', '1938-09-22', 'mary.williams@email.com', '6045552001', NULL, 'David', '6045559002'),
