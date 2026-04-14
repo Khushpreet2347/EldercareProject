@@ -1436,6 +1436,27 @@ public class ManagerMenuWindow
         iTabSaveAllButton.addActionListener(new ActionListener() {
             @Override
             public void actionPerformed(ActionEvent e) {
+                // Get Resident's HCN
+                String hcn = iTabHCNTextBox.getText();
+
+                //HCN Validation
+                if (hcn == null || hcn.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Please enter Resident HCN");
+            return;
+        }
+                //Run AI Trend Detection
+                TrendAnalyzer.declineDetectionAlgorithm(hcn);
+
+                //Medication AI
+                 try {
+            int scheduledHour = Integer.parseInt(iTabTimeTextBox.getText());
+            int actualHour = scheduledHour; // Replace later with real input if available
+
+            TrendAnalyzer.medicationStatusAlgorithm(scheduledHour, actualHour);
+
+        } catch (Exception ex) {
+            // ignore if time not valid
+        }
 
             }
         });
