@@ -1981,33 +1981,27 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
+                // Get Resident HCN
+                String hcn = iTabHCNTextBox.getText();
 
-                // Generate a recordID
-                int recordID = RecordIDGenerator.generateRecordID();
+                // HCN Validation
+                if (hcn == null || hcn.isEmpty()) {
+            JOptionPane.showMessageDialog(null, "Please enter Resident HCN");
+            return;
+        }
+                // Run AI trend Detection
+                 TrendAnalyzer.declineDetectionAlgorithm(hcn);
 
+                //Medication AI
+                try {
+            int scheduledHour = Integer.parseInt(iTabTimeTextBox.getText());
+            int actualHour = scheduledHour;
 
+            TrendAnalyzer.medicationStatusAlgorithm(scheduledHour, actualHour);
 
-
-
-
-
-
-
-                //Save user input to variables to pass into create Health Record method
-                /*String HCN = iTabHCNTextBox.getText().trim();
-                String fullName = iTabNameTextBox.getText().trim();
-
-
-                String note = iTabNotesTextArea.getText().trim();
-
-
-                //Create DAO objects to access data
-                HealthRecordDAO healthRecordDAO = new HealthRecordDAO();
-                healthRecordDAO.createHealthRecord(recordID, HCN, fullName,entryDate, entryTime, note, createdAt);
-
-                //Alert user of record creation*/
-
-
+        } catch (Exception ex) {
+            // ignore if invalid input
+        }
             }
         });
 
