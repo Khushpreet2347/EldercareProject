@@ -115,7 +115,7 @@ public class CaregiverDAO
         }
 
         //Return no results if user input does not match any database entries
-        return null;
+        return caregiver;
 
     }
 
@@ -190,7 +190,7 @@ public class CaregiverDAO
         }
 
         //Return no results if user input does not match any database entries
-        return null;
+        return caregiver;
 
     }
 
@@ -234,9 +234,11 @@ public class CaregiverDAO
     public void modifyCaregiver(String inputWorkID, String inputFName, String inputLName,
                                 String inputEmail, String inputPhoneNo, InputStream inputProfileImage)
     {
+
         //Connect to database
         try
         {
+
             Connection con = SQLConnection.getConnection();
 
             PreparedStatement stmt;
@@ -276,6 +278,7 @@ public class CaregiverDAO
         {
             e.printStackTrace();
         }
+
     }
 
     //Method to delete a caregiver in the database

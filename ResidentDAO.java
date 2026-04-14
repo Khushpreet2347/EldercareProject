@@ -41,8 +41,8 @@ public class ResidentDAO
                     rs.getString("email"),
                     rs.getString("phoneNo"),
                     rs.getBlob("profileImage"),
-                    rs.getString("eContactFName"),
-                    rs.getString("eContactPhoneNo")
+                    rs.getString("eContact_fName"),
+                    rs.getString("eContact_phoneNo")
                 );
 
                 //Add objects to List
@@ -101,8 +101,8 @@ public class ResidentDAO
                         rs.getString("email"),
                         rs.getString("phoneNo"),
                         rs.getBlob("profileImage"),
-                        rs.getString("eContactFName"),
-                        rs.getString("eContactPhoneNo")
+                        rs.getString("eContact_fName"),
+                        rs.getString("eContact_phoneNo")
                     );
                 }
 
@@ -122,7 +122,7 @@ public class ResidentDAO
         }
 
         //Return no results if user input does not match any database entries
-        return null;
+        return resident;
 
     }
 
@@ -179,8 +179,8 @@ public class ResidentDAO
                         rs.getString("email"),
                         rs.getString("phoneNo"),
                         rs.getBlob("profileImage"),
-                        rs.getString("eContactFName"),
-                        rs.getString("eContactPhoneNo")
+                        rs.getString("eContact_fName"),
+                        rs.getString("eContact_phoneNo")
                     );
                 }
 
@@ -201,13 +201,13 @@ public class ResidentDAO
         }
 
         //Return no results if user input does not match any database entries
-        return null;
+        return resident;
 
     }
 
     //Method to create a resident in the database
     public void createResident(String inputHCN, String inputFName, String inputLName, Date inputDateOfBirth, String inputEmail,
-                               String inputPhoneNo, InputStream inputProfileImage, String inputEContactFName, String inputEContactPhoneNo)
+                               String inputPhoneNo, InputStream inputProfileImage, String inputEContact_fName, String inputEContact_phoneNo)
     {
 
         //Connect to database
@@ -227,8 +227,8 @@ public class ResidentDAO
             stmt.setString(5, inputEmail);
             stmt.setString(6, inputPhoneNo);
             stmt.setBinaryStream(7, inputProfileImage);
-            stmt.setString(8, inputEContactFName);
-            stmt.setString(9, inputEContactPhoneNo);
+            stmt.setString(8, inputEContact_fName);
+            stmt.setString(9, inputEContact_phoneNo);
 
             //Execute query
             stmt.executeUpdate();
@@ -247,11 +247,13 @@ public class ResidentDAO
 
     //Method to modify a resident in the database
     public void modifyResident(String inputHCN, String inputFName, String inputLName, String inputDateOfBirth, String inputEmail,
-                               String inputPhoneNo, InputStream inputProfileImage, String inputEContactFName, String inputEContactPhoneNo)
+                               String inputPhoneNo, InputStream inputProfileImage, String inputEContact_fName, String inputEContact_phoneNo)
     {
+
         //Connect to database
         try
         {
+
             Connection con = SQLConnection.getConnection();
 
             //Convert datatype for DOB
@@ -271,8 +273,8 @@ public class ResidentDAO
                 stmt.setString(5, inputEmail);
                 stmt.setString(6, inputPhoneNo);
                 stmt.setBinaryStream(7, inputProfileImage);
-                stmt.setString(8, inputEContactFName);
-                stmt.setString(9, inputEContactPhoneNo);
+                stmt.setString(8, inputEContact_fName);
+                stmt.setString(9, inputEContact_phoneNo);
                 stmt.setString(10, inputHCN);
             }
             else
@@ -286,8 +288,8 @@ public class ResidentDAO
                 stmt.setDate(4, inputDOB);
                 stmt.setString(5, inputEmail);
                 stmt.setString(6, inputPhoneNo);
-                stmt.setString(7, inputEContactFName);
-                stmt.setString(8, inputEContactPhoneNo);
+                stmt.setString(7, inputEContact_fName);
+                stmt.setString(8, inputEContact_phoneNo);
                 stmt.setString(9, inputHCN);
             }
 
@@ -302,6 +304,7 @@ public class ResidentDAO
         {
             e.printStackTrace();
         }
+
     }
 
     //Method to delete a resident in the database
