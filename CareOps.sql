@@ -31,6 +31,8 @@ CREATE TABLE Caregiver (
     profileImage BLOB
 );
 
+ALTER TABLE Caregiver ADD profileImage BLOB;
+
 CREATE TABLE Assignment (
     assignmentID CHAR(7) PRIMARY KEY,
     HCN CHAR(10) NOT NULL,
