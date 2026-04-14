@@ -12,6 +12,7 @@ import javax.swing.event.ListSelectionEvent;
 import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.DefaultTableCellRenderer;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -319,8 +320,10 @@ public class ManagerMenuWindow
 
     //REPORT GENERATE PANEL | rg
     private JLabel rgTitleLabel;
+    private JLabel rgDetailsLabel;
     private JTable rgResultsTable;
     private DefaultTableModel rgTableModel;
+    private JLabel rgSummaryLabel;
     private JTable rgTotalCountsTable;
     private DefaultTableModel rgTableModelCounts;
     private JSeparator rgSeparator;
@@ -505,13 +508,13 @@ public class ManagerMenuWindow
         //Set headers for the table
         rgTableModelCounts.setColumnIdentifiers
                 (new String[]{
-                        "Total Active Residents",
-                        "Total Active Caregivers"
+                        "Active Residents",
+                        "Active Caregivers"
                 });
 
         rgTableModel.setColumnIdentifiers
                 (new String[]{
-                        "Resident Name",
+                        "Name",
                         "Missed Medications"
                 });
 
@@ -602,6 +605,21 @@ public class ManagerMenuWindow
             ReportDAO reportDAO = new ReportDAO();
             reportDAO.createReport("UserMedicationSummary", year, month, reportContentBuilder.toString());
 
+            //set column widths
+            rgResultsTable.getColumnModel().getColumn(0).setPreferredWidth(200);
+            rgResultsTable.getColumnModel().getColumn(1).setPreferredWidth(120);
+
+            rgTotalCountsTable.getColumnModel().getColumn(0).setPreferredWidth(140);
+            rgTotalCountsTable.getColumnModel().getColumn(1).setPreferredWidth(140);
+
+            //center numbers
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+            rgResultsTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+            rgTotalCountsTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+            rgTotalCountsTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+
             //Close resources
             stmtAR.close();
             stmtAC.close();
@@ -632,15 +650,15 @@ public class ManagerMenuWindow
         //Set headers for the table
         rgTableModelCounts.setColumnIdentifiers
                 (new String[]{
-                        "Total Abnormal Blood Pressure",
-                        "Total Abnormal Blood Sugar",
-                        "Total Abnormal Heart Rate",
-                        "Total Abnormal Temperature"
+                        "Blood Pressure",
+                        "Blood Sugar",
+                        "Heart Rate",
+                        "Temperature"
                 });
 
         rgTableModel.setColumnIdentifiers
                 (new String[]{
-                        "Resident Name",
+                        "Name",
                         "Irreg BP",
                         "Irreg BS",
                         "Irreg HR",
@@ -656,15 +674,15 @@ public class ManagerMenuWindow
             //Query to pass to grab total counts of abnormal vital signs
             //For the cases, THEN ELSE END counts which rows meet criteria (count as 1 for THEN) and which don't (count as 0 for ELSE)
             String query =
-                    "SELECT h.fName, r.lName, " +
+                    "SELECT r.fName, r.lName, " +
                             //BLOOD PRESSURE
                             "SUM(CASE WHEN " +
                             "vs.systolicPressure < 90 OR vs.diastolicPressure < 60 " +
-                            "OR vs.systolicPressure >= 130 OR vs.diastolicPressure >= 80"+
+                            "OR vs.systolicPressure >= 130 OR vs.diastolicPressure >= 80 "+
                             "THEN 1 ELSE 0 END) AS IrregBP, " +
                             //BLOOD SUGAR
                             "SUM(CASE WHEN " +
-                            "vs.bloodSugar < 60 OR vs.bloodSugar >= 200" +
+                            "vs.bloodSugar < 60 OR vs.bloodSugar >= 200 " +
                             "THEN 1 ELSE 0 END) AS IrregBS, " +
                             //HEART RATE
                             "SUM(CASE WHEN " +
@@ -675,11 +693,11 @@ public class ManagerMenuWindow
                             "vs.temperature < 35 OR vs.temperature >= 38.3 " +
                             "THEN 1 ELSE 0 END) AS IrregTemp " +
                             //JOIN TABLES
-                            "FROM VitalSigns vs" +
-                                "JOIN HealthRecord hr" +
-                                    "ON vs.recordID = hr.recordID" +
-                                "JOIN Resident r" +
-                                    "ON hr.HCN = r.HCN" +
+                            "FROM VitalSigns vs " +
+                                "JOIN HealthRecord hr " +
+                                    "ON vs.recordID = hr.recordID " +
+                                "JOIN Resident r " +
+                                    "ON hr.HCN = r.HCN " +
                             //For append
                             "WHERE 1 = 1";
 
@@ -752,8 +770,37 @@ public class ManagerMenuWindow
             ReportDAO reportDAO = new ReportDAO();
             reportDAO.createReport("HealthIrregularitiesSummary", year, month, reportContentBuilder.toString());
 
+            //set column widths
+            rgResultsTable.getColumnModel().getColumn(0).setPreferredWidth(180);
+            rgResultsTable.getColumnModel().getColumn(1).setPreferredWidth(60);
+            rgResultsTable.getColumnModel().getColumn(2).setPreferredWidth(60);
+            rgResultsTable.getColumnModel().getColumn(3).setPreferredWidth(60);
+            rgResultsTable.getColumnModel().getColumn(4).setPreferredWidth(60);
+
+            rgTotalCountsTable.getColumnModel().getColumn(0).setPreferredWidth(60);
+            rgTotalCountsTable.getColumnModel().getColumn(1).setPreferredWidth(60);
+            rgTotalCountsTable.getColumnModel().getColumn(2).setPreferredWidth(60);
+            rgTotalCountsTable.getColumnModel().getColumn(3).setPreferredWidth(60);
+
+            //center numbers
+            DefaultTableCellRenderer centerRenderer = new DefaultTableCellRenderer();
+            centerRenderer.setHorizontalAlignment(SwingConstants.CENTER);
+
+            rgResultsTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+            rgResultsTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+            rgResultsTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+            rgResultsTable.getColumnModel().getColumn(4).setCellRenderer(centerRenderer);
+
+            rgTotalCountsTable.getColumnModel().getColumn(0).setCellRenderer(centerRenderer);
+            rgTotalCountsTable.getColumnModel().getColumn(1).setCellRenderer(centerRenderer);
+            rgTotalCountsTable.getColumnModel().getColumn(2).setCellRenderer(centerRenderer);
+            rgTotalCountsTable.getColumnModel().getColumn(3).setCellRenderer(centerRenderer);
+
             //Close resources
+            rs.close();
+            stmt.close();
             con.close();
+
 
         }
         catch(SQLException e)
@@ -1981,27 +2028,33 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                // Get Resident HCN
-                String hcn = iTabHCNTextBox.getText();
 
-                // HCN Validation
-                if (hcn == null || hcn.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Please enter Resident HCN");
-            return;
-        }
-                // Run AI trend Detection
-                 TrendAnalyzer.declineDetectionAlgorithm(hcn);
+                // Generate a recordID
+                int recordID = RecordIDGenerator.generateRecordID();
 
-                //Medication AI
-                try {
-            int scheduledHour = Integer.parseInt(iTabTimeTextBox.getText());
-            int actualHour = scheduledHour;
 
-            TrendAnalyzer.medicationStatusAlgorithm(scheduledHour, actualHour);
 
-        } catch (Exception ex) {
-            // ignore if invalid input
-        }
+
+
+
+
+
+
+                //Save user input to variables to pass into create Health Record method
+                /*String HCN = iTabHCNTextBox.getText().trim();
+                String fullName = iTabNameTextBox.getText().trim();
+
+
+                String note = iTabNotesTextArea.getText().trim();
+
+
+                //Create DAO objects to access data
+                HealthRecordDAO healthRecordDAO = new HealthRecordDAO();
+                healthRecordDAO.createHealthRecord(recordID, HCN, fullName,entryDate, entryTime, note, createdAt);
+
+                //Alert user of record creation*/
+
+
             }
         });
 
