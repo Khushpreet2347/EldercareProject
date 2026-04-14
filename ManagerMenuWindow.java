@@ -1,7 +1,11 @@
 package GUIPackage;
 
 import ClassPackage.*;
+import Connector.SQLConnection;
 import DAOPackage.*;
+import MainPackage.CurrentSession;
+import MainPackage.PasswordUtil;
+import MainPackage.RecordIDGenerator;
 
 import javax.swing.*;
 import javax.swing.event.ListSelectionEvent;
@@ -15,7 +19,8 @@ import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.io.FileInputStream;
-import java.sql.Time;
+import java.sql.*;
+import java.util.ArrayList;
 import java.util.List;
 
 public class ManagerMenuWindow
@@ -74,7 +79,7 @@ public class ManagerMenuWindow
     private JFileChooser pmFileChooser;
     private JLabel pmFilePathLabel;
     private JButton pmUploadButton;
-    private JLabel pmNameLabel;
+    private JLabel pmIDSearchLabel;
     private JLabel pmIDLabel;
     private JLabel pmFNameLabel;
     private JLabel pmLNameLabel;
@@ -104,13 +109,20 @@ public class ManagerMenuWindow
     private JTextField meLNameTextBox;
     private JTextField meEmailTextBox;
     private JTextField meIDTextBox;
+    private JPasswordField meCurrentPasswordTextBox;
+    private JPasswordField meNewPasswordTextbox;
+    private JPasswordField meConfirmPasswordTextBox;
     private JLabel meIDLabel;
     private JLabel meFNameLabel;
     private JLabel meLNameLabel;
     private JLabel meEmailLabel;
     private JTextField mePhoneTextBox;
     private JLabel mePhoneLabel;
+    private JLabel meCurrentPasswordLabel;
+    private JLabel meNewPasswordLabel;
+    private JLabel meConfirmPasswordLabel;
     private JSeparator meSeparator;
+    private JSeparator meSeparator2;
     private JButton meSaveButton;
     private JButton meClearButton;
     private JToolBar meToolBar;
@@ -131,7 +143,7 @@ public class ManagerMenuWindow
     private JTable rsResultTable;
     private DefaultTableModel rsMedTableModel;
     private JTable rsMedResultTable;
-    private List<HealthRecord> rsCurrentSearchResults;
+    private List<HealthRecord> rsSelectionResults;
     private JTextField rsNameTextBox;
     private JTextField rsMedStatusTextbox;
     private JCheckBox rsMedStatusCheckBox;
@@ -173,7 +185,6 @@ public class ManagerMenuWindow
     private JButton iTabSaveAllButton;
     private JLabel iTabGenInfoLabel;
     private JLabel iTabHCNLabel;
-    private JLabel iTabNameLabel;
     private JLabel iTabNotesLabel;
     private JLabel iTabVitalSignslabel;
     private JLabel iTabBloodPressureLabel;
@@ -204,6 +215,8 @@ public class ManagerMenuWindow
     private JTextField eTabMedNameTextBox;
     private JTextField eTabMedNotesTextBox;
     private DefaultListModel<String> eTabListModel;
+    private JList eTabResultsList;
+    private DefaultListModel<String> eTabListModelResults;
     private JList eTabMedEntryList;
     private JButton eTabAddEntryButton;
     private JButton eTabRemoveEntryButton;
@@ -247,17 +260,16 @@ public class ManagerMenuWindow
     private JLabel dTabTitleLabel;
     private JTextField dTabRecordIDTextBox;
     private JTextField dTabNameTextBox;
-    private JTextField dTabDateTextBox;
-    private JComboBox dTabMedStatusComboBox;
-    private JCheckBox dTabNameCheckBox;
-    private JCheckBox dTabDateCheckBox;
-    private JCheckBox dTabRecordIDCheckBox;
-    private JCheckBox dTabMedStatusCheckBox;
+    private JRadioButton dTabRecordIDRadioButton;
+    private JRadioButton dTabFullNameRadioButton;
     private JButton dTabClearButton;
     private JButton dTabSearchButton;
-    private JSeparator dTabSeparator;
+    private JButton dTabDeleteButton;
     private DefaultListModel<String> dTabListModel;
     private JList dTabResultList;
+    private DefaultTableModel dTabTableModel;
+    private JTable dTabResultsTable;
+    private List<HealthRecord> dTabSelectionResults;
 
     //ACTIVITY SEARCH PANEL | as
     private JPanel activitySearch;
@@ -271,6 +283,7 @@ public class ManagerMenuWindow
     private JList asResultList;
     private DefaultTableModel asTableModel;
     private JTable asResultTable;
+    private List<Activity> asSelectionResults;
     private JButton asClearButton;
     private JButton asSearchButton;
     private JToolBar asToolBar;
@@ -306,32 +319,39 @@ public class ManagerMenuWindow
 
     //REPORT GENERATE PANEL | rg
     private JLabel rgTitleLabel;
-    private JSplitPane rgSplitPane;
-    private DefaultTableModel rgLeftTableModel;
-    private JTable rgLeftTable;
-    private DefaultTableModel rgRightTableModel;
-    private JTable rgRightTable;
+    private JTable rgResultsTable;
+    private DefaultTableModel rgTableModel;
+    private JTable rgTotalCountsTable;
+    private DefaultTableModel rgTableModelCounts;
+    private JSeparator rgSeparator;
     private JButton rgGenerateButton;
     private JButton rgClearButton;
     private JTextField rgYearTextBox;
     private JTextField rgMonthTextBox;
-    private JCheckBox rgMonthCheckBox;
     private JCheckBox rgYearCheckBox;
-    private JRadioButton rgUserMedRadioButton;
+    private JCheckBox rgMonthCheckBox;
     private JRadioButton rgHealthIrregRadioButton;
+    private JRadioButton rgUserMedRadioButton;
     private JToolBar rgToolBar;
     private JButton rgToolBarBackButton;
 
     //REPORT SEARCH PANEL | rgs
-    private JTextField rgsSearchTextBox;
+    private JTextField rgsYearTextBox;
     private DefaultListModel<String> rgsListModel;
     private JList rgsResultList;
     private DefaultTableModel rgsTableModel;
     private JTable rgsResultTable;
+    private List<Report> rgsSelectionResults;
     private JButton rgsToolBarButton;
     private JToolBar rgsToolBar;
     private JLabel rgsTitleLabel;
-    private JLabel rgsSearchlabel;
+    private JRadioButton rgsUserMedicationSummaryRadioButton;
+    private JRadioButton rgsHealthIrregularitiesSummaryRadioButton;
+    private JCheckBox rgsYearCheckBox;
+    private JCheckBox rgsMonthCheckBox;
+    private JLabel rgsYearLabel;
+    private JLabel rgsMonthLabel;
+    private JTextField rgsMonthTextbox;
     private JButton rgsClearButton;
     private JButton rgsSearchButton;
 
@@ -342,7 +362,10 @@ public class ManagerMenuWindow
     //Radio Button Groups
     private ButtonGroup activityManagementRadioGroup;
     private ButtonGroup profileManagementRadioGroup;
+    private ButtonGroup dTabRadioGroup;
     private ButtonGroup reportGenerateRadioGroup;
+    private ButtonGroup getReportGenerateRadioGroup2;
+    private ButtonGroup reportGenerateSearchRadioGroup;
 
     //File for profile photos
     private File pmSelectedProfilePhoto;
@@ -370,19 +393,21 @@ public class ManagerMenuWindow
     private void loadHealthRecords(HealthRecord healthRecord)
     {
 
-        //Save health recordID to variable (is a foreign key in related health record tables in database
-        int recordID = healthRecord.getRecordID();
-
         //Load DAOs to access data from
         ConditionDAO conditionDAO = new ConditionDAO();
         MedicationEntryDAO medicationEntryDAO = new MedicationEntryDAO();
         VitalSignsDAO vitalSignsDAO = new VitalSignsDAO();
+        ResidentDAO residentDAO = new ResidentDAO();
 
-        //Grab records of associated tables using a matching recordID from Health Record table
+        //Save health recordID to variable (is a foreign key in related health record tables in database
+        int recordID = healthRecord.getRecordID();
+
+        //Grab records of associated tables using a matching recordID from Health Record table (plus Resident name)
         //(Will return objects related to the Health Record entry
         Condition condition = conditionDAO.getOneCondition(recordID);
         List<MedicationEntry> medicationEntryList = medicationEntryDAO.getMedicationEntriesViaID(recordID);
         VitalSigns vitalSigns = vitalSignsDAO.getOneVitalSigns(recordID);
+        Resident resident = residentDAO.getOneResidentViaID(healthRecord.getHCN());
 
         //Clear current data in tables
         rsTableModel.setColumnCount(0);
@@ -424,15 +449,22 @@ public class ManagerMenuWindow
             heartRate = vitalSigns.getHeartRate();
         }
 
+        //Resident Name
+        String fullName = "";
+
+        if(resident != null)
+        {
+            fullName = resident.getfName() + " " + resident.getlName();
+        }
+
         //Add info to tables
         //HEALTH RECORD TABLE (Will show one record)
         rsTableModel.addRow
-                (new Object[]
-                {
-                 recordID, healthRecord.getHCN(), healthRecord.getfName(), healthRecord.getlName(),
+                (new Object[]{
+                    recordID, healthRecord.getHCN(), fullName,
                         healthRecord.getEntryDate(), healthRecord.getEntryTime(), healthRecord.getNote(),
-                 mood, painLevel, sleepQuality,
-                 systolic, diastolic, bloodSugar, temperature, heartRate
+                    mood, painLevel, sleepQuality,
+                    systolic, diastolic, bloodSugar, temperature, heartRate
                 });
 
         //MEDICATION TABLE (Will show multiple records attach to the one health record
@@ -440,8 +472,7 @@ public class ManagerMenuWindow
         {
             for(MedicationEntry me : medicationEntryList)
             {
-                rsMedTableModel.addRow(new Object[]
-                {
+                rsMedTableModel.addRow(new Object[]{
                     me.getmName(),
                     me.getDose(),
                     me.getAdministeredTime(),
@@ -458,6 +489,279 @@ public class ManagerMenuWindow
                             "-", "-", "-", "-", "-"
                     });
         }
+    }
+
+    //REPORT GENERATE METHODS | rg ///////////////////////////////////////////////////////////////////////////////////
+
+    private void generateReportUMS(int year, int month)
+    {
+
+        //Clear out previous results in table
+        rgTableModel.setRowCount(0);
+        rgTableModel.setColumnCount(0);
+        rgTableModelCounts.setRowCount(0);
+        rgTableModelCounts.setColumnCount(0);
+
+        //Set headers for the table
+        rgTableModelCounts.setColumnIdentifiers
+                (new String[]{
+                        "Total Active Residents",
+                        "Total Active Caregivers"
+                });
+
+        rgTableModel.setColumnIdentifiers
+                (new String[]{
+                        "Resident Name",
+                        "Missed Medications"
+                });
+
+        //Connect to database
+        try
+        {
+
+            Connection con = SQLConnection.getConnection();
+
+            //Get count of active Residents from the database
+            Statement stmtAR = con.createStatement();
+            ResultSet rsAR = stmtAR.executeQuery("SELECT COUNT(*) FROM Resident");
+            rsAR.next();
+            int totalActiveResidents = rsAR.getInt(1);
+
+            //Get count of active Caregivers from the database
+            Statement stmtAC = con.createStatement();
+            ResultSet rsAC = stmtAC.executeQuery("SELECT COUNT(*) FROM Caregiver");
+            rsAC.next();
+            int totalActiveCaregivers = rsAC.getInt(1);
+
+            //Get count of missed medications from each Resident
+            String query =
+                    "SELECT r.fName, r.lName, COUNT(*) as missedCount " +
+                            "FROM MedicationEntry me " +
+                                "JOIN HealthRecord hr " +
+                                    "ON me.recordID = hr.recordID " +
+                                "JOIN Resident r " +
+                                    "ON hr.HCN = r.HCN " +
+                            "WHERE me.status = 'Missed' ";
+
+            //Add onto query according to user entered year and/or month
+            if(year != 0)
+            {
+                query += "AND YEAR(hr.entryDate) = " + year + " ";
+            }
+
+            if(month != 0)
+            {
+                query += "AND MONTH(hr.entryDate) = " + month + " ";
+            }
+
+            //Add onto query grouping and ordering by most missed meds to least
+            query += "GROUP BY r.fName, r.lName ORDER BY missedCount DESC";
+
+            Statement stmtMM = con.createStatement();;
+            ResultSet rsMM = stmtMM.executeQuery(query);
+
+            //Save missed medications by resident results to variables
+            //Database keeps report type and its content so the content will be saved to a string builder for the db
+            StringBuilder reportContentBuilder = new StringBuilder();
+
+            //Append total counts of Residents and Caregivers
+            reportContentBuilder.append("Total Active Residents: ")
+                                .append(totalActiveResidents).append("\n");
+
+            reportContentBuilder.append("Total Active Caregivers: ")
+                                .append(totalActiveCaregivers).append("\n");
+
+            //Append missed counts by Residents
+            while(rsMM.next())
+            {
+                //Get name and counts
+                String name = rsMM.getString("fName") + " " + rsMM.getString("lName");
+                int missedCount = rsMM.getInt("missedCount");
+
+                //Add Resident name and their total missed medication count to the results table
+                rgTableModel.addRow
+                (new Object[]{
+                    name,
+                    missedCount
+                });
+
+                //Add missed medication count by Residents to string builder to store as "content" in the database
+                reportContentBuilder.append("Resident Name: ")
+                                    .append(name)
+                                    .append(" Total Missed Medications: ")
+                                    .append(missedCount).append("\n");
+            }
+
+            //Add total counts of Residents and Caregivers to total counts table
+            rgTableModelCounts.addRow
+            (new Object[]{
+                totalActiveResidents, totalActiveCaregivers
+            });
+
+            //Save the new generated report to the database
+            ReportDAO reportDAO = new ReportDAO();
+            reportDAO.createReport("UserMedicationSummary", year, month, reportContentBuilder.toString());
+
+            //Close resources
+            stmtAR.close();
+            stmtAC.close();
+            stmtMM.close();
+            rsAR.close();
+            rsAC.close();
+            rsMM.close();
+            con.close();
+
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "There was an error creating a report");
+        }
+
+    }
+
+    private void generateReportHIS(int year, int month)
+    {
+
+        //Clear out previous results in table
+        rgTableModel.setRowCount(0);
+        rgTableModel.setColumnCount(0);
+        rgTableModelCounts.setRowCount(0);
+        rgTableModelCounts.setColumnCount(0);
+
+        //Set headers for the table
+        rgTableModelCounts.setColumnIdentifiers
+                (new String[]{
+                        "Total Abnormal Blood Pressure",
+                        "Total Abnormal Blood Sugar",
+                        "Total Abnormal Heart Rate",
+                        "Total Abnormal Temperature"
+                });
+
+        rgTableModel.setColumnIdentifiers
+                (new String[]{
+                        "Resident Name",
+                        "Irreg BP",
+                        "Irreg BS",
+                        "Irreg HR",
+                        "Irreg Temp"
+                });
+
+        //Connect to database
+        try
+        {
+
+            Connection con = SQLConnection.getConnection();
+
+            //Query to pass to grab total counts of abnormal vital signs
+            //For the cases, THEN ELSE END counts which rows meet criteria (count as 1 for THEN) and which don't (count as 0 for ELSE)
+            String query =
+                    "SELECT h.fName, r.lName, " +
+                            //BLOOD PRESSURE
+                            "SUM(CASE WHEN " +
+                            "vs.systolicPressure < 90 OR vs.diastolicPressure < 60 " +
+                            "OR vs.systolicPressure >= 130 OR vs.diastolicPressure >= 80"+
+                            "THEN 1 ELSE 0 END) AS IrregBP, " +
+                            //BLOOD SUGAR
+                            "SUM(CASE WHEN " +
+                            "vs.bloodSugar < 60 OR vs.bloodSugar >= 200" +
+                            "THEN 1 ELSE 0 END) AS IrregBS, " +
+                            //HEART RATE
+                            "SUM(CASE WHEN " +
+                            "vs.heartRate < 50 OR vs.heartRate >= 110 " +
+                            "THEN 1 ELSE 0 END) AS IrregHR, " +
+                            //BODY TEMPERATURE
+                            "SUM(CASE WHEN " +
+                            "vs.temperature < 35 OR vs.temperature >= 38.3 " +
+                            "THEN 1 ELSE 0 END) AS IrregTemp " +
+                            //JOIN TABLES
+                            "FROM VitalSigns vs" +
+                                "JOIN HealthRecord hr" +
+                                    "ON vs.recordID = hr.recordID" +
+                                "JOIN Resident r" +
+                                    "ON hr.HCN = r.HCN" +
+                            //For append
+                            "WHERE 1 = 1";
+
+            //Add onto query according to user entered year and/or month
+            if(year != 0)
+            {
+                query += " AND YEAR(hr.entryDate) = " + year;
+            }
+
+            if(month != 0)
+            {
+                query += " AND MONTH(hr.entryDate) = " + month;
+            }
+
+            //Add onto query grouping and ordering by most vital signs to least
+            query += "GROUP BY r.fName, r.lName ORDER BY IrregBp + IrregBS + IrregHR + IrregTemp DESC";
+
+            Statement stmt = con.createStatement();
+            ResultSet rs = stmt.executeQuery(query);
+
+            //Save abnormal vital sign counts to variables
+            int totalBP = 0;
+            int totalBS = 0;
+            int totalHR = 0;
+            int totalTemp = 0;
+
+            //Save counts of irregular vital signs to database
+            //Database keeps report type and its content so the content will be saved to a string builder for the db
+            StringBuilder reportContentBuilder = new StringBuilder();
+
+            while(rs.next())
+            {
+                //Get name and counts
+                String name = rs.getString("fName") + " " + rs.getString("lName");
+
+                //Grab counts from query results
+                int ibp = rs.getInt("IrregBP");
+                int ibs = rs.getInt("IrregBS");
+                int ihr = rs.getInt("IrregHR");
+                int it = rs.getInt("IrregTemp");
+
+                //Add counts to totals variables
+                totalBP += ibp;
+                totalBS += ibs;
+                totalHR += ihr;
+                totalTemp += it;
+
+                //Add irregular vital sign counts for each Resident to results table
+                rgTableModel.addRow
+                        (new Object[]{
+                                name, ibp, ibs, ihr, it
+                        });
+
+                //Add irregular vital sign counts for each Resident to string builder to store as "content" in the database
+                reportContentBuilder.append("Resident Name : ")
+                        .append(name)
+                        .append(" Blood Pressure: ").append(ibp)
+                        .append(" Blood Sugar: ").append(ibs)
+                        .append(" Heart Rate: ").append(ihr)
+                        .append(" Temperature").append(it).append("\n");
+            }
+
+            //Add total counts of abnormal vital signs to total counts table
+            rgTableModelCounts.addRow
+                    (new Object[]{
+                            totalBP, totalBS, totalHR, totalTemp
+                    });
+
+            //Save the new generated report to the database
+            ReportDAO reportDAO = new ReportDAO();
+            reportDAO.createReport("HealthIrregularitiesSummary", year, month, reportContentBuilder.toString());
+
+            //Close resources
+            con.close();
+
+        }
+        catch(SQLException e)
+        {
+            e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "There was an error creating a report");
+        }
+
     }
 
     //Class holding methods for JFrame
@@ -531,6 +835,25 @@ public class ManagerMenuWindow
             }
         });
 
+        //ICONS FOR MAIN MENU PAGE
+        ImageIcon menuLogo = new ImageIcon(getClass().getResource("/CareOpsLogo.png"));
+        ImageIcon menuIcon = new ImageIcon(getClass().getResource("/healthcare.png"));
+
+        //Convert and scale images
+        Image menuLogoImage = menuLogo.getImage();
+        Image scaledMenuLogo = menuLogoImage.getScaledInstance(250, 250, Image.SCALE_SMOOTH);
+        ImageIcon scaledImageMenuLogo = new ImageIcon(scaledMenuLogo);
+
+        Image menuIconImage = menuIcon.getImage();
+        Image scaledMenuIcon = menuIconImage.getScaledInstance(180, 180, Image.SCALE_SMOOTH);
+        ImageIcon scaledImageMenuIcon = new ImageIcon(scaledMenuIcon);
+
+        //Set labels to be icons
+        mmLogoLabel.setText("");
+        mmIconLabel.setText("");
+        mmLogoLabel.setIcon(scaledImageMenuLogo);
+        mmIconLabel.setIcon(scaledImageMenuIcon);
+
         //Menu list options
         //Menu sub options after button option selection, each selection will change cards and bring the user
         //to their desired screen ex. User wishes to access Profile Search window, they will click
@@ -582,23 +905,6 @@ public class ManagerMenuWindow
                 }
             }
         });
-
-        //ICONS FOR MAIN MENU PAGE
-        ImageIcon menuLogo = new ImageIcon(getClass().getResource("/CareOpsLogo.png"));
-        ImageIcon menuIcon = new ImageIcon(getClass().getResource("/healthcare.png"));
-
-        //Convert and scale images
-        Image menuLogoImage = menuLogo.getImage();
-        Image scaledMenuLogo = menuLogoImage.getScaledInstance(50, 50, Image.SCALE_SMOOTH);
-        ImageIcon scaledImageMenuLogo = new ImageIcon(scaledMenuLogo);
-
-        Image menuIconImage = menuIcon.getImage();
-        Image scaledMenuIcon = menuIconImage.getScaledInstance(50, 50, Image.SCALE_SMOOTH);
-        ImageIcon scaledImageMenuIcon = new ImageIcon(scaledMenuIcon);
-
-        //Set labels to be icons
-        mmLogoLabel.setIcon(scaledImageMenuLogo);
-        mmIconLabel.setIcon(scaledImageMenuIcon);
 
         //LOG OUT USER BUTTON
         mmLogoutButton.addActionListener(new ActionListener()
@@ -654,7 +960,7 @@ public class ManagerMenuWindow
                     return;
                 }
 
-                //Clear any pass results
+                //Clear any past results
                 psListModel.clear();
 
                 //Grab user input and save to a variable (IDInput covers both workID and HCN
@@ -946,9 +1252,20 @@ public class ManagerMenuWindow
                     //Populate textboxes with data for user to modify
                     if(resident != null)
                     {
+                        pmSelectedProfilePhoto = null;
+
+                        if(resident.getProfileImage() != null)
+                        {
+                            pmFilePathLabel.setText("Photo uploaded");
+                        }
+                        else
+                        {
+                            pmFilePathLabel.setText("No photo uploaded");
+                        }
                         pmIDTextBox.setText(resident.getHCN());
                         pmFNameTextBox.setText(resident.getfName());
                         pmLNameTextBox.setText(resident.getlName());
+                        pmDOBTextBox.setText(resident.getDateOfBirth().toString());
                         pmEmailTextBox.setText(resident.getEmail());
                         pmPhoneTextBox.setText(resident.getPhoneNo());
                         pmEContactTextBox.setText(resident.geteContactFName());
@@ -969,6 +1286,16 @@ public class ManagerMenuWindow
                     //Populate textboxes with data for user to modify
                     if(caregiver != null)
                     {
+                        pmSelectedProfilePhoto = null;
+
+                        if(caregiver.getProfileImage() != null)
+                        {
+                            pmFilePathLabel.setText("Photo uploaded");
+                        }
+                        else
+                        {
+                            pmFilePathLabel.setText("No photo uploaded");
+                        }
                         pmIDTextBox.setText(caregiver.getWorkID());
                         pmFNameTextBox.setText(caregiver.getfName());
                         pmLNameTextBox.setText(caregiver.getlName());
@@ -1041,6 +1368,19 @@ public class ManagerMenuWindow
 
                 try
                 {
+                    //Handle DOB date conversion from text to date
+                    java.sql.Date pmDOB = null;
+
+                    try
+                    {
+                        pmDOB = java.sql.Date.valueOf(pmDOBTextBox.getText().trim());
+                    }
+                    catch (IllegalArgumentException ex)
+                    {
+                        JOptionPane.showMessageDialog(null, "Please use a yyyy-MM-dd format");
+                        return;
+                    }
+
                     //Handle profile photo conversion to stream if user reuploads an image
                     FileInputStream pmFIS = null;
 
@@ -1064,15 +1404,15 @@ public class ManagerMenuWindow
                             //Create a resident object using the DAO
                             residentDAO.createResident
                             (
-                                pmIDTextBox.getText(),
-                                pmFNameTextBox.getText(),
-                                pmLNameTextBox.getText(),
-                                pmEmailTextBox.getText(),
-                                pmPhoneTextBox.getText(),
-                                pmDOBTextBox.getText(),
+                                pmIDTextBox.getText().trim(),
+                                pmFNameTextBox.getText().trim(),
+                                pmLNameTextBox.getText().trim(),
+                                pmDOB,
+                                pmEmailTextBox.getText().trim(),
+                                pmPhoneTextBox.getText().trim(),
                                 pmFIS,
-                                pmEContactTextBox.getText(),
-                                pmEPhoneTextBox.getText()
+                                pmEContactTextBox.getText().trim(),
+                                pmEPhoneTextBox.getText().trim()
                             );
 
                             //Alert user of successful profile save
@@ -1087,11 +1427,11 @@ public class ManagerMenuWindow
                             //Create a caregiver object using the DAO
                             caregiverDAO.createCaregiver
                             (
-                                pmIDTextBox.getText(),
-                                pmFNameTextBox.getText(),
-                                pmLNameTextBox.getText(),
-                                pmEmailTextBox.getText(),
-                                pmPhoneTextBox.getText(),
+                                pmIDTextBox.getText().trim(),
+                                pmFNameTextBox.getText().trim(),
+                                pmLNameTextBox.getText().trim(),
+                                pmEmailTextBox.getText().trim(),
+                                pmPhoneTextBox.getText().trim(),
                                 pmFIS
                             );
 
@@ -1111,15 +1451,15 @@ public class ManagerMenuWindow
                             //Create a resident object using the DAO
                             residentDAO.modifyResident
                             (
-                                pmIDTextBox.getText(),
-                                pmFNameTextBox.getText(),
-                                pmLNameTextBox.getText(),
-                                pmEmailTextBox.getText(),
-                                pmPhoneTextBox.getText(),
-                                pmDOBTextBox.getText(),
+                                pmIDTextBox.getText().trim(),
+                                pmFNameTextBox.getText().trim(),
+                                pmLNameTextBox.getText().trim(),
+                                pmDOBTextBox.getText().trim(),
+                                pmEmailTextBox.getText().trim(),
+                                pmPhoneTextBox.getText().trim(),
                                 pmFIS,
-                                pmEContactTextBox.getText(),
-                                pmEPhoneTextBox.getText()
+                                pmEContactTextBox.getText().trim(),
+                                pmEPhoneTextBox.getText().trim()
                             );
 
                             //Alert user of successful profile save
@@ -1134,11 +1474,11 @@ public class ManagerMenuWindow
                             //Create a caregiver object using the DAO
                             caregiverDAO.modifyCaregiver
                             (
-                                pmIDTextBox.getText(),
-                                pmFNameTextBox.getText(),
-                                pmLNameTextBox.getText(),
-                                pmEmailTextBox.getText(),
-                                pmPhoneTextBox.getText(),
+                                pmIDTextBox.getText().trim(),
+                                pmFNameTextBox.getText().trim(),
+                                pmLNameTextBox.getText().trim(),
+                                pmEmailTextBox.getText().trim(),
+                                pmPhoneTextBox.getText().trim(),
                                 pmFIS
                             );
 
@@ -1152,19 +1492,42 @@ public class ManagerMenuWindow
                         //RESIDENT OPTION
                         if("Resident".equals(pmProfileType))
                         {
-                            ResidentDAO residentDAO = new ResidentDAO();
-                            residentDAO.deleteResident(pmIDTextBox.getText());
+
+                            //CONFIRM WITH THE USER IF THEY WANT TO DELETE THE PROFILE
+                            int pmConfirmDelete = JOptionPane.showConfirmDialog
+                                    (null, "Are you sure you want to delete this profile?", "Confirm?", JOptionPane.YES_NO_OPTION);
+
+                            if(pmConfirmDelete == JOptionPane.YES_OPTION)
+                            {
+                                //Create DAO object to access database
+                                ResidentDAO residentDAO = new ResidentDAO();
+
+                                //Delete profile
+                                residentDAO.deleteResident(pmIDTextBox.getText().trim());
+
+                                //Alert user of successful profile deletion
+                                JOptionPane.showMessageDialog(null, "Profile has been deleted");
+                            }
                         }
                         //CAREGIVER OPTION
                         else if("Caregiver".equals(pmProfileType))
                         {
-                            CaregiverDAO caregiverDAO = new CaregiverDAO();
-                            caregiverDAO.deleteCaregiver(pmIDTextBox.getText());
+                            //CONFIRM WITH THE USER IF THEY WANT TO DELETE THE PROFILE
+                            int pmConfirmDelete = JOptionPane.showConfirmDialog
+                                    (null, "Are you sure you want to delete this profile?", "Confirm?", JOptionPane.YES_NO_OPTION);
+
+                            if(pmConfirmDelete == JOptionPane.YES_OPTION)
+                            {
+                                //Create DAO object to access database
+                                CaregiverDAO caregiverDAO = new CaregiverDAO();
+
+                                //Delete profile
+                                caregiverDAO.deleteCaregiver(pmIDTextBox.getText().trim());
+
+                                //Alert user of successful profile deletion
+                                JOptionPane.showMessageDialog(null, "Profile has been deleted");
+                            }
                         }
-
-                        //Alert user of successful profile deletion
-                        JOptionPane.showMessageDialog(null, "Caregiver profile has been deleted");
-
                     }
 
                     //Close file input stream
@@ -1194,14 +1557,6 @@ public class ManagerMenuWindow
             }
         });
 
-        //LOAD CURRENT MANAGER INFO
-
-
-
-
-
-
-
         //DISABLE WORK ID TEXTBOX (Manager can't change their work ID)
         meIDTextBox.setEnabled(false);
 
@@ -1211,12 +1566,27 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                meFNameLabel.setText("");
-                meLNameLabel.setText("");
+                meFNameTextBox.setText("");
+                meLNameTextBox.setText("");
                 meEmailTextBox.setText("");
                 mePhoneTextBox.setText("");
+                meCurrentPasswordTextBox.setText("");
             }
         });
+
+        //LOAD CURRENT MANAGER INFO
+        Manager currentManager = CurrentSession.currentManager;
+
+        //CHECK MANAGER OBJECT
+        if(currentManager != null)
+        {
+            meIDTextBox.setText(currentManager.getWorkID());
+            meFNameTextBox.setText(currentManager.getfName());
+            meLNameTextBox.setText(currentManager.getlName());
+            meEmailTextBox.setText(currentManager.getEmail());
+            mePhoneTextBox.setText(currentManager.getPhoneNo());
+            meCurrentPasswordTextBox.setText(currentManager.getPasswordHash());
+        }
 
         //SAVE ACCOUNT MODIFICATIONS BUTTON
         meSaveButton.addActionListener(new ActionListener()
@@ -1224,6 +1594,90 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
+
+                //LOAD CURRENT MANAGER INFO
+                Manager currentManager = CurrentSession.currentManager;
+
+                //CHECK MANAGER OBJECT
+                if(currentManager == null)
+                {
+                    JOptionPane.showMessageDialog(null, "No manager was session found");
+                    return;
+                }
+
+                //GET NEW USER INPUT
+                String meFName = meFNameTextBox.getText().trim();
+                String meLName = meLNameTextBox.getText().trim();
+                String meEmail = meEmailTextBox.getText().trim();
+                String mePhone = mePhoneTextBox.getText().trim();
+
+                //GET NEW PASSWORD
+                String meCurrentPassword = new String(meCurrentPasswordTextBox.getPassword()).trim();
+                String meNewPassword = new String(meNewPasswordTextbox.getPassword()).trim();
+                String meConfirmPassword = new String(meConfirmPasswordTextBox.getPassword()).trim();
+
+                //Create a DAO object to access database
+                ManagerDAO managerDAO = new ManagerDAO();
+
+                //CHECK USER INPUT
+                if(meFName.isEmpty() || meLName.isEmpty() || meEmail.isEmpty() || mePhone.isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please fill out all fields");
+                    return;
+                }
+
+                //CHECK IF USER WANTS TO CHANGE THEIR PASSWORD
+                //Set a password change flag
+                boolean meChangePassword = !meNewPassword.isEmpty() || !meConfirmPassword.isEmpty();
+
+                if(meChangePassword)
+                {
+                    //Check the user's current password input
+                    boolean meMatch = PasswordUtil.verifyPassword(meCurrentPassword, currentManager.getPasswordHash());
+
+                    if(!meMatch)
+                    {
+                        JOptionPane.showMessageDialog(null, "The current password is incorrect");
+                        return;
+                    }
+
+                    //Check if the user's new password is retyped correctly (the same) in the confirm password field
+                    if(!meNewPassword.equals(meConfirmPassword))
+                    {
+                        JOptionPane.showMessageDialog(null, "Your passwords do not match");
+                        return;
+                    }
+
+                    //Enforce a password length
+                    if(meNewPassword.length() < 8)
+                    {
+                        JOptionPane.showMessageDialog(null, "Password must be at least 8 characters");
+                        return;
+                    }
+
+                    //Update the current Manager's profile with the new password
+                    managerDAO.modifyManager(currentManager.getWorkID(), meFName, meLName, meEmail, mePhone, meNewPassword);
+                }
+                else
+                {
+                    //Update the current Manager's profile without a new password
+                    managerDAO.modifyManager(currentManager.getWorkID(), meFName, meLName, meEmail, mePhone, "");
+                }
+
+                //UPDATE THE CURRENT SESSION'S MANAGER'S INFO
+                currentManager.setfName(meFName);
+                currentManager.setlName(meLName);
+                currentManager.setEmail(meEmail);
+                currentManager.setPhoneNo(mePhone);
+                currentManager.setPasswordHash(meNewPassword);
+
+                //Alert user of the Manager profile update
+                JOptionPane.showMessageDialog(null, "Manager profile updated");
+
+                //CLEAR PASSWORD FIELDS
+                meCurrentPasswordTextBox.setText("");
+                meNewPasswordTextbox.setText("");
+                meConfirmPasswordTextBox.setText("");
 
             }
         });
@@ -1284,6 +1738,19 @@ public class ManagerMenuWindow
         rsMedTableModel = new DefaultTableModel();
         rsMedResultTable.setModel(rsMedTableModel);
 
+        //Set up table model for data display starting with headers
+        rsTableModel.setColumnIdentifiers
+                (new String[]{
+                        "Record ID", "HCN", "Date", "Time", "Note",
+                        "Mood", "Pain Level", "Sleep Quality",
+                        "Systolic Pressure", "Diastolic Pressure", "Blood Sugar", "Temperature", "Heart Rate"
+                });
+
+        rsMedTableModel.setColumnIdentifiers
+                (new String[]{
+                        "Medication Name", "Dose", "Time Given", "Status", "Med Note"
+                });
+
         //CLEAR INPUT BUTTON
         rsClearButton.addActionListener(new ActionListener()
         {
@@ -1317,6 +1784,20 @@ public class ManagerMenuWindow
                     return;
                 }
 
+                //check date format if Date checkbox is selected
+                if(rsDateCheckBox.isSelected())
+                {
+                    try
+                    {
+                        java.sql.Date.valueOf(rsDateTextbox.getText().trim());
+                    }
+                    catch(IllegalArgumentException ex)
+                    {
+                        JOptionPane.showMessageDialog(null, "Please enter date as yyyy-MM-dd");
+                        return;
+                    }
+                }
+
                 //Save user inputs to variables depending on which option they pick for search
                 String rsInputName = rsNameCheckBox.isSelected() ? rsNameTextBox.getText().trim() : null;
                 String rsInputDate = rsDateCheckBox.isSelected() ? rsDateTextbox.getText().trim() : null;
@@ -1324,9 +1805,6 @@ public class ManagerMenuWindow
 
                 //Create a DAO object to access data and display
                 HealthRecordDAO healthRecordDAO = new HealthRecordDAO();
-                ConditionDAO conditionDAO = new ConditionDAO();
-                MedicationEntry medicationEntry = new MedicationEntry();
-                VitalSignsDAO vitalSignsDAO = new VitalSignsDAO();
                 List<HealthRecord> healthRecordResults = healthRecordDAO.getAllHealthRecords(rsInputName, rsInputDate, rsInputStatus);
 
                 //Clear previous input
@@ -1335,56 +1813,62 @@ public class ManagerMenuWindow
                 rsMedTableModel.setColumnCount(0);
                 rsMedTableModel.setRowCount(0);
 
-                //Get info from a listed health record result to display in table
-                rsResultList.addListSelectionListener(new ListSelectionListener()
+                //Populate list with health record results
+                if(healthRecordResults != null && !healthRecordResults.isEmpty())
                 {
-                    @Override
-                    public void valueChanged(ListSelectionEvent e)
+                    //Save the current results found from user input
+                    rsSelectionResults = healthRecordResults;
+
+                    //Fill out list with the current search results from user input using a loop
+                    for(HealthRecord healthRecord : healthRecordResults)
                     {
-                        //Check if value is empty
-                        if(!e.getValueIsAdjusting())
-                        {
-                            //Save the selected list index to a variable
-                            int rsSelectedIndex = rsResultList.getSelectedIndex();
+                        //Get Resident name using HCN
+                        String residentName = healthRecordDAO.getResidentNameViaHCN(healthRecord.getHCN());
 
-                            //Load the data from the selected record into the results table
-                            if(rsSelectedIndex != -1)
-                            {
-                                //Save the index of the selected record to pass to method
-                                HealthRecord rsSelectedRecord = rsCurrentSearchResults.get(rsSelectedIndex);
+                        //Store info in string
+                        String displayRecord =
+                                healthRecord.getRecordID() + " | "
+                                + healthRecord.getHCN() + " | "
+                                + residentName
+                                + healthRecord.getEntryDate();
 
-                                //Load details
-                                loadHealthRecords(rsSelectedRecord);
-                            }
-                        }
+                        //Add string to list model
+                        rsListModel.addElement(displayRecord);
                     }
-                });
 
-                //Set up table model for data display starting with headers
-                rsTableModel.setColumnIdentifiers
-                        (new String[]{
-                                "Record ID", "HCN", "Date", "Time", "Note", "Mood", "Pain Level", "Sleep Quality", "Systolic Pressure", "Diastolic Pressure", "Blood Sugar", "Temperature", "Heart Rate"
-                        });
+                    //Set model in list
+                    rsResultList.setModel(rsListModel);
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "No health record was found");
+                }
+            }
+        });
 
-                rsMedTableModel.setColumnIdentifiers
-                        (new String[]{
-                                "Medication Name", "Dose", "Time Given", "Status", "Med Note"
-                        });
+        //LIST SELECTION LISTENER
+        //Get info from a listed health record result to display in table
+        rsResultList.addListSelectionListener(new ListSelectionListener()
+        {
+            @Override
+            public void valueChanged(ListSelectionEvent e)
+            {
+                //Check is user is in the middle of a current action
+                if(!e.getValueIsAdjusting())
+                {
+                    //Save the selected list index to a variable
+                    int rsSelectedIndex = rsResultList.getSelectedIndex();
 
-                //Display search results in table
+                    //Load the data from the selected record into the results table
+                    if(rsSelectedIndex != -1)
+                    {
+                        //Save the index of the selected record to pass to method
+                        HealthRecord rsSelectedRecord = rsSelectionResults.get(rsSelectedIndex);
 
-
-
-
-
-
-
-
-
-
-
-
-
+                        //Load details
+                        loadHealthRecords(rsSelectedRecord);
+                    }
+                }
             }
         });
 
@@ -1403,161 +1887,354 @@ public class ManagerMenuWindow
 
         //INSERT TAB +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        iTabStatusComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        //POPULATE MEDICATION STATUS COMBO BOX
+        iTabStatusComboBox.addItem("Given");
+        iTabStatusComboBox.addItem("Late");
+        iTabStatusComboBox.addItem("Missed");
+        iTabStatusComboBox.setSelectedIndex(-1);
 
+        //Declare a list model (allows a list to be edited)
+        iTabListModel = new DefaultListModel<>();
+        iTabMedEntryList.setModel(iTabListModel);
+
+        //ADD A MEDICATION ENTRY TO LIST (using list since multiple medications can be attached to one health record)
+        iTabAddEntryButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //Save user input to variables
+                String medName = iTabMedNameTextBox.getText().trim();
+                String dose = iTabDoseTextBox.getText().trim();
+                String time = iTabTimeTextBox.getText().trim();
+                String status = (String) iTabStatusComboBox.getSelectedItem();
+
+                //Check for user input
+                if(medName.isEmpty() || dose.isEmpty() || time.isEmpty() || status == null)
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter input in all the medication fields");
+                    return;
+                }
+
+                //Enter values into a string variable to display in list model
+                String iTabMedEntry = medName + " | " + dose + " | " + time + " | " + status;
+                iTabListModel.addElement(iTabMedEntry);
+
+                //Clear fields to allow user to add another set of values for a medication entry if they choose so
+                iTabMedNameTextBox.setText("");
+                iTabDoseTextBox.setText("");
+                iTabTimeTextBox.setText("");
+                iTabStatusComboBox.setSelectedIndex(-1);
             }
         });
-        iTabRemoveEntryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
+        //REMOVE A MEDICATION ENTRY FROM LIST (remove a wrong entry BEFORE saving the entire record)
+        iTabRemoveEntryButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //Save user selected index from list to grab which entry they want to delete
+                int iTabSelectedIndex = iTabMedEntryList.getSelectedIndex();
+
+                //Check for user input
+                if(iTabSelectedIndex != -1)
+                {
+                    //Remove entry from list
+                    iTabListModel.remove(iTabSelectedIndex);
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "Please select an entry to remove from list");
+                }
             }
         });
-        iTabAddEntryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
+        //CLEAR INPUT BUTTON
+        iTabClearAllButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                iTabHCNTextBox.setText("");
+                iTabNameTextBox.setText("");
+                iTabNotesTextArea.setText("");
+                iTabSystolicPressureTextBox.setText("");
+                iTabDiastolicPressureTextBox.setText("");
+                iTabBloodSugarTextBox.setText("");
+                iTabTemperatureTextBox.setText("");
+                iTabHeartRateTextBox.setText("");
+                iTabMoodSlider.setValue(0);
+                iTabPainLevelSlider.setValue(0);
+                iTabSleepQualitySlider.setValue(0);
+                iTabMedNameTextBox.setText("");
+                iTabDoseTextBox.setText("");
+                iTabTimeTextBox.setText("");
+                iTabStatusComboBox.setSelectedIndex(-1);
+                iTabNameTextBox.setText("");
+                iTabListModel.clear();
             }
         });
-        iTabMedEntryList.addMouseListener(new MouseAdapter() {
+
+        iTabSaveAllButton.addActionListener(new ActionListener()
+        {
             @Override
-            public void mouseClicked(MouseEvent e) {
-                super.mouseClicked(e);
-            }
-        });
-        iTabClearAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
 
-            }
-        });
-        iTabSaveAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
-                // Get Resident's HCN
-                String hcn = iTabHCNTextBox.getText();
+                // Generate a recordID
+                int recordID = RecordIDGenerator.generateRecordID();
 
-                //HCN Validation
-                if (hcn == null || hcn.isEmpty()) {
-            JOptionPane.showMessageDialog(null, "Please enter Resident HCN");
-            return;
-        }
-                //Run AI Trend Detection
-                TrendAnalyzer.declineDetectionAlgorithm(hcn);
 
-                //Medication AI
-                 try {
-            int scheduledHour = Integer.parseInt(iTabTimeTextBox.getText());
-            int actualHour = scheduledHour; // Replace later with real input if available
 
-            TrendAnalyzer.medicationStatusAlgorithm(scheduledHour, actualHour);
 
-        } catch (Exception ex) {
-            // ignore if time not valid
-        }
+
+
+
+
+
+                //Save user input to variables to pass into create Health Record method
+                /*String HCN = iTabHCNTextBox.getText().trim();
+                String fullName = iTabNameTextBox.getText().trim();
+
+
+                String note = iTabNotesTextArea.getText().trim();
+
+
+                //Create DAO objects to access data
+                HealthRecordDAO healthRecordDAO = new HealthRecordDAO();
+                healthRecordDAO.createHealthRecord(recordID, HCN, fullName,entryDate, entryTime, note, createdAt);
+
+                //Alert user of record creation*/
+
 
             }
         });
 
         //EDIT TAB +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        eTabSearchButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        //POPULATE MEDICATION STATUS COMBO BOX
+        eTabStatusComboBox.addItem("Given");
+        eTabStatusComboBox.addItem("Late");
+        eTabStatusComboBox.addItem("Missed");
+        eTabStatusComboBox.setSelectedIndex(-1);
 
+        //Declare a list model (allows a list to be edited)
+        eTabListModel = new DefaultListModel<>();
+        eTabMedEntryList.setModel(eTabListModel);
+
+        eTabListModelResults = new DefaultListModel<>();
+        eTabResultsList.setModel(eTabListModelResults);
+
+        //ENABLE TEXTBOXES BASED ON CHECKED BOXES
+        eTabNameTextBox.setEnabled(false);
+        eTabRecordIDTextBox.setEnabled(false);
+
+        eTabSearchNameCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                eTabNameTextBox.setEnabled(eTabSearchNameCheckBox.isSelected());
             }
         });
-        eTabStatusComboBox.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
+        eTabRecordIDCheckBox.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                eTabRecordIDTextBox.setEnabled(eTabRecordIDCheckBox.isSelected());
             }
         });
-        eTabRemoveEntryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
+        //ADD A EDITED MEDICATION ENTRY
+        eTabAddEntryButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //Save user input to variables
+                String medName = eTabMedNameTextBox.getText().trim();
+                String dose = eTabDoseTextBox.getText().trim();
+                String time = eTabTimeTextBox.getText().trim();
+                String status = (String) eTabStatusComboBox.getSelectedItem();
+
+                //Check for user input
+                if(medName.isEmpty() || dose.isEmpty() || time.isEmpty() || status == null)
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter input in all the medication fields");
+                    return;
+                }
+
+                //Enter values into a string variable to display in list model
+                String eTabMedEntry = medName + " | " + dose + " | " + time + " | " + status;
+                eTabListModel.addElement(eTabMedEntry);
+
+                //Clear fields to allow user to add another set of values for a medication entry if they choose so
+                eTabMedNameTextBox.setText("");
+                eTabDoseTextBox.setText("");
+                eTabTimeTextBox.setText("");
+                eTabStatusComboBox.setSelectedIndex(-1);
             }
         });
-        eTabAddEntryButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
 
+        //REMOVE A MEDICATION ENTRY
+        eTabRemoveEntryButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //Save user selected index from list to grab which entry they want to delete
+                int eTabSelectedIndex = eTabMedEntryList.getSelectedIndex();
+
+                //Check for user input
+                if(eTabSelectedIndex != -1)
+                {
+                    //Remove entry from list
+                    iTabListModel.remove(eTabSelectedIndex);
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "Please select an entry to remove from list");
+                }
             }
         });
-        eTabMedEntryList.addMouseListener(new MouseAdapter() {
+
+        //SELECT A MEDICATION ENTRY TO EDIT
+        eTabMedEntryList.addMouseListener(new MouseAdapter()
+        {
             @Override
-            public void mouseClicked(MouseEvent e) {
+            public void mouseClicked(MouseEvent e)
+            {
                 super.mouseClicked(e);
-            }
-        });
-        eTabClearAllButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+
+
+
+
+
+
+
 
             }
         });
-        eTabSaveAllButton.addActionListener(new ActionListener() {
+
+        //CLEAR INPUT BUTTON
+        eTabClearAllButton.addActionListener(new ActionListener()
+        {
             @Override
-            public void actionPerformed(ActionEvent e) {
+            public void actionPerformed(ActionEvent e)
+            {
+                eTabSearchNameCheckBox.setSelected(false);
+                eTabSearchNameTextBox.setText("");
+                eTabRecordIDCheckBox.setSelected(false);
+                eTabRecordIDTextBox.setText("");
+                eTabHCNTextBox.setText("");
+                eTabNameTextBox.setText("");
+                eTabNotesTextArea.setText("");
+                eTabSystolicPressureTextBox.setText("");
+                eTabDiastolicPressureTextBox.setText("");
+                eTabBloodSugarTextBox.setText("");
+                eTabTemperatureTextBox.setText("");
+                eTabHeartRateTextBox.setText("");
+                eTabMoodSlider.setValue(0);
+                eTabPainLevelSlider.setValue(0);
+                eTabSleepQualitySlider.setValue(0);
+                eTabMedNameTextBox.setText("");
+                eTabDoseTextBox.setText("");
+                eTabTimeTextBox.setText("");
+                eTabStatusComboBox.setSelectedIndex(-1);
+                eTabNameTextBox.setText("");
+                eTabListModel.clear();
+            }
+        });
+
+        //SEARCH BUTTON (Preloads record info)
+        eTabSearchButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+                //Save user input for searching health records to edit to variables
+                String inputName = eTabNameTextBox.getText().trim();
+                String inputRecordID = eTabRecordIDTextBox.getText().trim();
+
+                //Save user input to variables
+                String medName = eTabMedNameTextBox.getText().trim();
+                String dose = eTabDoseTextBox.getText().trim();
+                String time = eTabTimeTextBox.getText().trim();
+                String status = (String) eTabStatusComboBox.getSelectedItem();
+
+                //Check for user input
+                if(medName.isEmpty() || dose.isEmpty() || time.isEmpty() || status == null)
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter input in all the medication fields");
+                    return;
+                }
+
+                //Enter values into a string variable to display in list model
+                String eTabMedEntry = medName + " | " + dose + " | " + time + " | " + status;
+                eTabListModel.addElement(eTabMedEntry);
+
+                //Clear fields to allow user to add another set of values for a medication entry if they choose so
+                eTabMedNameTextBox.setText("");
+                eTabDoseTextBox.setText("");
+                eTabTimeTextBox.setText("");
+                eTabStatusComboBox.setSelectedIndex(-1);
+            }
+        });
+
+        //SAVE BUTTON
+        eTabSaveAllButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+
+
+
+
+
+
+
+
+
+
+
 
             }
         });
 
         //DELETE TAB +++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
 
-        //POPULATE MEDICATION STATUS COMBO BOX
-        dTabMedStatusComboBox.addItem("Given");
-        dTabMedStatusComboBox.addItem("Late");
-        dTabMedStatusComboBox.addItem("Missed");
-        dTabMedStatusComboBox.setSelectedIndex(-1);
-
         //ENABLE TEXTBOXES BASED ON CHECKED BOXES
         dTabNameTextBox.setEnabled(false);
-        dTabDateTextBox.setEnabled(false);
         dTabRecordIDTextBox.setEnabled(false);
-        dTabMedStatusComboBox.setEnabled(false);
 
-        dTabNameCheckBox.addActionListener(new ActionListener()
+        dTabFullNameRadioButton.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                dTabNameTextBox.setEnabled(dTabNameCheckBox.isSelected());
+                dTabNameTextBox.setEnabled(dTabFullNameRadioButton.isSelected());
             }
         });
 
-        dTabDateCheckBox.addActionListener(new ActionListener()
+        dTabRecordIDRadioButton.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                dTabDateTextBox.setEnabled(dTabDateCheckBox.isSelected());
+                dTabRecordIDTextBox.setEnabled(dTabRecordIDRadioButton.isSelected());
             }
         });
 
-        dTabRecordIDCheckBox.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                dTabRecordIDTextBox.setEnabled(dTabRecordIDCheckBox.isSelected());
-            }
-        });
-        dTabMedStatusCheckBox.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                dTabMedStatusComboBox.setEnabled(dTabMedStatusCheckBox.isSelected());
-            }
-        });
-
-        //Declare a list model (allows a list to be edited)
+        //Declare a list model and table mode (allows a list/table to be edited)
         dTabListModel = new DefaultListModel<>();
         dTabResultList.setModel(dTabListModel);
+
+        dTabTableModel = new DefaultTableModel();
+        dTabResultsTable.setModel(dTabTableModel);
 
         //CLEAR INPUT BUTTON
         dTabClearButton.addActionListener(new ActionListener()
@@ -1565,12 +2242,9 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                dTabNameCheckBox.setSelected(false);
-                dTabDateCheckBox.setSelected(false);
-                dTabMedStatusCheckBox.setSelected(false);
-                dTabMedStatusComboBox.setSelectedIndex(-1);
+                dTabFullNameRadioButton.setSelected(false);
+                dTabRecordIDRadioButton.setSelected(false);
                 dTabNameTextBox.setText("");
-                dTabDateTextBox.setText("");
                 dTabRecordIDTextBox.setText("");
                 dTabListModel.clear();
             }
@@ -1583,17 +2257,178 @@ public class ManagerMenuWindow
             public void actionPerformed(ActionEvent e)
             {
                 //DETECT INPUT
-                if(dTabNameCheckBox.isSelected() && dTabNameTextBox.getText().isEmpty() && dTabDateCheckBox.isSelected()
-                        && dTabDateTextBox.getText().isEmpty() && dTabRecordIDCheckBox.isSelected() && dTabRecordIDTextBox.getText().isEmpty()
-                        && dTabMedStatusCheckBox.isSelected() && dTabMedStatusComboBox.getSelectedIndex() == -1)
+                if (dTabFullNameRadioButton.isSelected() && dTabNameTextBox.getText().isEmpty())
                 {
-                    JOptionPane.showMessageDialog(null, "Please enter at least one input");
+                    JOptionPane.showMessageDialog(null, "Please enter a full name");
+                    return;
                 }
-                else if((dTabNameCheckBox.isSelected() && dTabNameTextBox.getText().isEmpty()) || (dTabDateCheckBox.isSelected()
-                        && dTabDateTextBox.getText().isEmpty()) || (dTabRecordIDCheckBox.isSelected() && dTabRecordIDTextBox.getText().isEmpty())
-                        || (dTabMedStatusCheckBox.isSelected() && dTabMedStatusComboBox.getSelectedIndex() == -1))
+
+                if (dTabRecordIDRadioButton.isSelected() && dTabRecordIDTextBox.getText().isEmpty())
                 {
-                    JOptionPane.showMessageDialog(null, "Please enter input for checked fields");
+                    JOptionPane.showMessageDialog(null, "Please enter a Record ID");
+                    return;
+                }
+
+                //Variables to grab user input
+                String dTabFullName = dTabNameTextBox.getText();
+                String dTabRecordID = dTabRecordIDTextBox.getText();
+
+                //Clear previous results
+                dTabListModel.clear();
+                dTabTableModel.setRowCount(0);
+                dTabTableModel.setColumnCount(0);
+
+                //Create DAO object to access database
+                HealthRecordDAO healthRecordDAO = new HealthRecordDAO();
+
+                //Populate List depending on user input option
+                //If user selects to search by a Full Name
+                if(dTabFullNameRadioButton.isSelected())
+                {
+
+                    //Create a list to save results to
+                    List<HealthRecord> healthRecords = new ArrayList<>();
+
+                    //Grab Health Record results based on user input
+                    healthRecords = healthRecordDAO.getHealthRecordViaName(dTabFullName);
+
+                    if(healthRecords != null && !healthRecords.isEmpty())
+                    {
+                        //Save search results to use in table
+                        dTabSelectionResults = healthRecords;
+
+                        //Fill out results list using a loop
+                        for(HealthRecord hr : healthRecords)
+                        {
+                            String dTabResults = "Record ID:" + hr.getRecordID() +
+                                                    "HCN: " + hr.getHCN() +
+                                                    "Entry Date: " + hr.getEntryDate();
+                            dTabListModel.addElement(dTabResults);
+                        }
+                    }
+                    else
+                    {
+                        JOptionPane.showMessageDialog(null, "No Health Records were found");
+                        return;
+                    }
+                }
+                //If user selects to search by Record ID
+                else if(dTabRecordIDRadioButton.isSelected())
+                {
+
+                    //Create a list to save results to
+                    List<HealthRecord> healthRecords = new ArrayList<>();
+
+                    //Grab Health Record results based on user input
+                    healthRecords = healthRecordDAO.getHealthRecordViaID(dTabRecordID);
+
+                    if(healthRecords != null && !healthRecords.isEmpty())
+                    {
+                        //Save search results to use in table
+                        dTabSelectionResults = healthRecords;
+
+                        //Fill out results list using a loop
+                        for(HealthRecord hr : healthRecords)
+                        {
+                            String dTabResults = "Record ID:" + hr.getRecordID() +
+                                                    "HCN: " + hr.getHCN() +
+                                                    "Entry Date: " + hr.getEntryDate();
+                            dTabListModel.addElement(dTabResults);
+                        }
+                    }
+                    else
+                    {
+                        JOptionPane.showMessageDialog(null, "No Health Records were found");
+                        return;
+                    }
+                }
+            }
+        });
+
+        //LOAD RECORD CONTENTS ONTO TABLE AFTER LIST USER SELECTION
+        dTabResultList.addListSelectionListener(new ListSelectionListener()
+        {
+            @Override
+            public void valueChanged(ListSelectionEvent e)
+            {
+
+                //Check is user is in the middle of a current action
+                if(!e.getValueIsAdjusting())
+                {
+
+                    //Save the selected list index to a variable
+                    int dTabSelectedIndex = dTabResultList.getSelectedIndex();
+
+                    //Load the data from the selected record into the results table
+                    if(dTabSelectedIndex != -1)
+                    {
+                        //Save the index of the selected record to pass to method
+                        HealthRecord dTabSelectedHealthRecord = dTabSelectionResults.get(dTabSelectedIndex);
+
+                        //Clear previous results
+                        dTabTableModel.setRowCount(0);
+                        dTabTableModel.setColumnCount(0);
+
+                        //Set up table model for data display starting with headers
+                        dTabTableModel.setColumnIdentifiers
+                        (new String[]{
+                            "Record ID", "Health Care Number", "Entry Date", "Entry Time", "Notes"
+                        });
+
+                        //Load details
+                        dTabTableModel.addRow
+                        (new Object[]{
+                            dTabSelectedHealthRecord.getRecordID(),
+                            dTabSelectedHealthRecord.getHCN(),
+                            dTabSelectedHealthRecord.getEntryDate(),
+                            dTabSelectedHealthRecord.getEntryTime(),
+                            dTabSelectedHealthRecord.getNote()
+                        });
+                    }
+                }
+            }
+        });
+
+        //SAVE BUTTON
+        dTabDeleteButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+
+                //Get user selected index from results list
+                int dTabSelectedIndex = dTabResultList.getSelectedIndex();
+
+                //CHECK USER SELECTION INPUT
+                if(dTabSelectedIndex == -1)
+                {
+                    JOptionPane.showMessageDialog(null, "Please select a record to delete");
+                    return;
+                }
+
+                //CONFIRM WITH THE USER IF THEY WANT TO DELETE THE HEALTH RECORD
+                int dTabConfirmDelete = JOptionPane.showConfirmDialog
+                        (null, "Are you sure you want to delete this health record?", "Confirm?", JOptionPane.YES_NO_OPTION);
+
+                //DELETE RECORD DEPENDING ON USER CONFIRMATION
+                if(dTabConfirmDelete == JOptionPane.YES_OPTION)
+                {
+                    //Get selected health record to delete by selected index
+                    HealthRecord dTabSelectedChoice = dTabSelectionResults.get(dTabSelectedIndex);
+
+                    //Create a DAO object to access database
+                    HealthRecordDAO healthRecordDAO = new HealthRecordDAO();
+
+                    //Delete the Health Record
+                    healthRecordDAO.deleteHealthRecord(dTabSelectedChoice.getRecordID());
+
+                    //Alert user of deletion
+                    JOptionPane.showMessageDialog(null, "Health Record has been deleted");
+
+                    //Remove deleted record from the results list
+                    dTabListModel.remove(dTabSelectedIndex);
+                    dTabTableModel.setRowCount(0);
+                    dTabSelectionResults.remove(dTabSelectedIndex);
                 }
             }
         });
@@ -1638,122 +2473,88 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                String titleInput = asSearchTextBox.getText();
-
-                //CHECK INPUT
-                if(titleInput.isEmpty())
+                //DETECT USER INPUT
+                if(asSearchTextBox.getText().isEmpty())
                 {
                     JOptionPane.showMessageDialog(null, "Please enter a title");
                     return;
                 }
 
-                //CALL DAO
-                ActivityDAO aDAO = new ActivityDAO();
-                Activity activity = aDAO.getOneActivity(titleInput);
+                //Grab user input
+                String inputTitle = asSearchTextBox.getText().trim();
 
-                if(activity == null)
+                //Clear previous search results
+                asListModel.clear();
+                asTableModel.setRowCount(0);
+                asTableModel.setColumnCount(0);
+
+                //Create DAO objects to access database
+                ActivityDAO activityDAO = new ActivityDAO();
+                List<Activity> activities = activityDAO.getAllActivitiesByTitle(inputTitle);
+
+                if(activities != null && !activities.isEmpty())
                 {
-                    JOptionPane.showMessageDialog(null, "Activity not found");
+
+                    //Save the search results to a list to use for the results table
+                    asSelectionResults = activities;
+
+                    //Fill out results list using a loop
+                    for(Activity a : activities)
+                    {
+                        String asResults = a.getActivityID() + " | " + a.getTitle();
+                        asListModel.addElement(asResults);
+                    }
                 }
                 else
                 {
-                    //FILL FIELDS
-                    amTitleTextBox.setText(activity.getTitle());
-                    amDateTextBox.setText(activity.getDate().toString());
-                    amTimeTextBox.setText(activity.getTime().toString());
-                    amDescriptionTextArea.setText(activity.getDescription());
-                    amNotesTextArea.setText(activity.getParticipantNotes());
-                    amStatusComboBox.setSelectedItem(activity.getStatus());
+                    JOptionPane.showMessageDialog(null, "No activities were found");
+                    return;
                 }
             }
         });
 
-        //SAVE ACTIVITY BUTTON
-        amSaveButton.addActionListener(new ActionListener()
+        //RESULTS LIST ON SELECTION LOADS DETAILS ONTO TABLE
+        asResultList.addListSelectionListener(new ListSelectionListener()
         {
             @Override
-            public void actionPerformed(ActionEvent e)
+            public void valueChanged(ListSelectionEvent e)
             {
-                try
+                //Check is user is in the middle of a current action
+                if(!e.getValueIsAdjusting())
                 {
-                    ActivityDAO aDAO = new ActivityDAO();
+                    //Save the selected list index to a variable
+                    int asSelectedIndex = asResultList.getSelectedIndex();
 
-                    //GET INPUT
-                    String title = amTitleTextBox.getText();
-                    String dateStr = amDateTextBox.getText();
-                    String timeStr = amTimeTextBox.getText();
-                    String description = amDescriptionTextArea.getText();
-                    String notes = amNotesTextArea.getText();
-                    String status = amStatusComboBox.getSelectedItem().toString();
-
-                    //VALIDATION
-                    if(title.isEmpty() || dateStr.isEmpty() || timeStr.isEmpty())
+                    //Load the data from the selected record into the results table
+                    if(asSelectedIndex != 1)
                     {
-                        JOptionPane.showMessageDialog(null, "Please fill required fields");
-                        return;
+                        //Save the index of the selected record to pass to method
+                        Activity asSelectedActivity = asSelectionResults.get(asSelectedIndex);
+
+                        //Clear previous results
+                        asTableModel.setRowCount(0);
+                        asTableModel.setColumnCount(0);
+
+                        //Set up table model for data display starting with headers
+                        asTableModel.setColumnIdentifiers
+                        (new String[]{
+                            "Activity ID", "Title", "Date", "Time",
+                            "Description", "Participant Notes", "Status"
+                        });
+
+                        //Load details
+                        asTableModel.addRow
+                        (new Object[]{
+                            asSelectedActivity.getActivityID(),
+                            asSelectedActivity.getTitle(),
+                            asSelectedActivity.getDate(),
+                            asSelectedActivity.getTime(),
+                            asSelectedActivity.getDescription(),
+                            asSelectedActivity.getParticipantNotes(),
+                            asSelectedActivity.getStatus()
+                        });
                     }
-
-                    //CONVERT TYPES
-                    java.sql.Date date = java.sql.Date.valueOf(dateStr); // format: YYYY-MM-DD
-                    java.sql.Time time = java.sql.Time.valueOf(timeStr); // format: HH:MM:SS
-
-                    //CREATE
-                    if(amCreateRadioButton.isSelected())
-                    {
-                        aDAO.createActivity(0, title, date, time, description, notes, status);
-                        JOptionPane.showMessageDialog(null, "Activity created");
-                    }
-
-                    //MODIFY
-                    else if(amModifyRadioButton.isSelected())
-                    {
-                        Activity existing = aDAO.getOneActivity(title);
-
-                        if(existing == null)
-                        {
-                            JOptionPane.showMessageDialog(null, "Activity not found to modify");
-                            return;
-                        }
-
-                        aDAO.modifyActivity(
-                                existing.getActivityID(),
-                                title, date, time, description, notes, status
-                        );
-
-                        JOptionPane.showMessageDialog(null, "Activity updated");
-                    }
-
-                    //DELETE
-                    else if(amDeleteRadioButton.isSelected())
-                    {
-                        aDAO.deleteActivity(title);
-                        JOptionPane.showMessageDialog(null, "Activity deleted");
-                    }
-                    else
-                    {
-                        JOptionPane.showMessageDialog(null, "Please select an action");
-                    }
-
                 }
-                catch(Exception ex)
-                {
-                    JOptionPane.showMessageDialog(null, "Invalid date/time format");
-                }
-            }
-        });
-
-        //CLEAR ACTIVITY BUTTON
-        amClearButton.addActionListener(new ActionListener()
-        {
-            @Override
-            public void actionPerformed(ActionEvent e)
-            {
-                amTitleTextBox.setText("");
-                amDateTextBox.setText("");
-                amTimeTextBox.setText("");
-                amDescriptionTextArea.setText("");
-                amNotesTextArea.setText("");
-                amStatusComboBox.setSelectedIndex(0);
             }
         });
 
@@ -1816,19 +2617,166 @@ public class ManagerMenuWindow
             }
         });
 
-        //SEARCH ACTIVITY TO MANAGE BUTTON
+        //SEARCH ACTIVITY BUTTON
+        amSearchButton.addActionListener(new ActionListener()
+        {
+            @Override
+            public void actionPerformed(ActionEvent e)
+            {
+
+                if(amSearchTextBox.getText().isEmpty())
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter a title");
+                    return;
+                }
+
+                //Clear any past results
+                amTitleTextBox.setText("");
+                amDateTextBox.setText("");
+                amTimeTextBox.setText("");
+                amDescriptionTextArea.setText("");
+                amNotesTextArea.setText("");
+                amStatusComboBox.setSelectedIndex(-1);
+
+                //Grab user input and save to a variable
+                String titleInput = amSearchTextBox.getText().trim();
+
+                //Creat DAO object to connect to database
+                ActivityDAO activityDAO = new ActivityDAO();
+                Activity activity = activityDAO.getOneActivity(titleInput);
+
+                //Populate textboxes with data for user to modify
+                if(activity != null)
+                {
+                    amTitleTextBox.setText(activity.getTitle());
+                    amDateTextBox.setText(activity.getDate().toString());
+                    amTimeTextBox.setText(activity.getTime().toString());
+                    amDateTextBox.setText(activity.getDescription());
+                    amNotesTextArea.setText(activity.getParticipantNotes());
+                    amStatusComboBox.setSelectedItem(activity.getStatus());
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "No Activity was found");
+                }
+            }
+        });
+
+        //SAVE ACTIVITY BUTTON
         amSaveButton.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                if(amCreateRadioButton.isSelected() && amTitleTextBox.getText().isEmpty() && amDateTextBox.getText().isEmpty() && amTimeTextBox.getText().isEmpty() && amDescriptionTextArea.getText().isEmpty() && amNotesTextArea.getText().isEmpty() && amStatusComboBox.getSelectedIndex() == -1)
+                //check empty fields
+                if(amTitleTextBox.getText().trim().isEmpty() ||
+                        amDateTextBox.getText().trim().isEmpty() ||
+                        amTimeTextBox.getText().trim().isEmpty() ||
+                        amDescriptionTextArea.getText().trim().isEmpty() ||
+                        amNotesTextArea.getText().trim().isEmpty() ||
+                        amStatusComboBox.getSelectedItem() == null)
                 {
-                    JOptionPane.showMessageDialog(null, "Please fill out all activity details");
+                    JOptionPane.showMessageDialog(null, "Please fill out all fields");
+                    return;
                 }
-                else if(amCreateRadioButton.isSelected() && (amTitleTextBox.getText().isEmpty() || amDateTextBox.getText().isEmpty() || amTimeTextBox.getText().isEmpty() || amDescriptionTextArea.getText().isEmpty() || amNotesTextArea.getText().isEmpty() || amStatusComboBox.getSelectedIndex() == -1))
+
+                //check date format
+                try
                 {
-                    JOptionPane.showMessageDialog(null, "Please fill out selected textboxes");
+                    java.sql.Date.valueOf(amDateTextBox.getText().trim());
+                }
+                catch(IllegalArgumentException ex)
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter date as yyyy-MM-dd");
+                    return;
+                }
+
+                //check time format
+                try
+                {
+                    java.sql.Time.valueOf(amTimeTextBox.getText().trim());
+                }
+                catch(IllegalArgumentException ex)
+                {
+                    JOptionPane.showMessageDialog(null, "Please enter time as HH:mm:ss");
+                    return;
+                }
+
+                try
+                {
+                    ActivityDAO aDAO = new ActivityDAO();
+
+                    //Save user input to variables
+                    String amTitle = amTitleTextBox.getText().trim();
+                    String amDate = amDateTextBox.getText().trim();
+                    String amTime = amTimeTextBox.getText().trim();
+                    String amDescription = amDescriptionTextArea.getText();
+                    String amNotes = amNotesTextArea.getText();
+                    String amStatus = amStatusComboBox.getSelectedItem().toString();
+
+                    //Check user input
+                    if(amTitle.isEmpty() || amDate.isEmpty() || amTime.isEmpty())
+                    {
+                        JOptionPane.showMessageDialog(null, "Please fill all required fields");
+                        return;
+                    }
+
+                    //CONVERT TYPES
+                    java.sql.Date amDateStr = java.sql.Date.valueOf(amDate); // format: YYYY-MM-DD
+                    java.sql.Time amTimeStr = java.sql.Time.valueOf(amTime); // format: HH:MM:SS
+
+                    //CREATE
+                    if(amCreateRadioButton.isSelected())
+                    {
+                        aDAO.createActivity(amTitle, amDateStr, amTimeStr, amDescription, amNotes, amStatus);
+                        JOptionPane.showMessageDialog(null, "Activity has been created");
+                    }
+                    //MODIFY
+                    else if(amModifyRadioButton.isSelected())
+                    {
+                        //Check if the activity the user is searching for exists
+                        Activity existing = aDAO.getOneActivity(amTitle);
+
+                        if(existing == null)
+                        {
+                            JOptionPane.showMessageDialog(null, "No Activity was found");
+                            return;
+                        }
+
+                        //Update the activity
+                        aDAO.modifyActivity
+                        (
+                            existing.getActivityID(),
+                            amTitle, amDateStr, amTimeStr, amDescription, amNotes, amStatus
+                        );
+
+                        JOptionPane.showMessageDialog(null, "Activity has been updated");
+                    }
+                    //DELETE
+                    else if(amDeleteRadioButton.isSelected())
+                    {
+                        //CONFIRM WITH THE USER IF THEY WANT TO DELETE THE ACTIVITY
+                        int amConfirmDelete = JOptionPane.showConfirmDialog
+                                (null, "Are you sure you want to delete this activity?", "Confirm?", JOptionPane.YES_NO_OPTION);
+
+                        //DELETE ACTIVITY DEPENDING ON USER CONFIRMATION
+                        if(amConfirmDelete == JOptionPane.YES_OPTION)
+                        {
+                            //Delete Activity
+                            aDAO.deleteActivity(amTitle);
+
+                            //Alert user of deletion
+                            JOptionPane.showMessageDialog(null, "Activity has been deleted");
+                        }
+                    }
+                    else
+                    {
+                        JOptionPane.showMessageDialog(null, "Please select an action");
+                    }
+                }
+                catch(Exception ex)
+                {
+                    JOptionPane.showMessageDialog(null, "Invalid date/time format");
                 }
             }
         });
@@ -1858,6 +2806,7 @@ public class ManagerMenuWindow
                 rgYearTextBox.setEnabled(rgYearCheckBox.isSelected());
             }
         });
+
         rgMonthCheckBox.addActionListener(new ActionListener()
         {
             @Override
@@ -1868,11 +2817,11 @@ public class ManagerMenuWindow
         });
 
         //Declare a table model (allows a table to be edited)
-        rgLeftTableModel = new DefaultTableModel();
-        rgLeftTable.setModel(rgLeftTableModel);
+        rgTableModel = new DefaultTableModel();
+        rgResultsTable.setModel(rgTableModel);
 
-        rgRightTableModel = new DefaultTableModel();
-        rgRightTable.setModel(rgRightTableModel);
+        rgTableModelCounts = new DefaultTableModel();
+        rgTotalCountsTable.setModel(rgTableModelCounts);
 
         //CLEAR INPUT BUTTON
         rgClearButton.addActionListener(new ActionListener()
@@ -1880,15 +2829,13 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                rgUserMedRadioButton.setSelected(true);
+                rgUserMedRadioButton.setSelected(false);
                 rgYearCheckBox.setSelected(false);
                 rgMonthCheckBox.setSelected(false);
                 rgYearTextBox.setText("");
                 rgMonthTextBox.setText("");
-                rgLeftTableModel.setColumnCount(0);
-                rgLeftTableModel.setRowCount(0);
-                rgRightTableModel.setColumnCount(0);
-                rgRightTableModel.setRowCount(0);
+                rgTableModel.setColumnCount(0);
+                rgTableModel.setRowCount(0);
             }
         });
 
@@ -1898,78 +2845,74 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                //CHECK TYPE SELECTED
+
+                //CHECK USER INPUT FOR RADIO BUTTONS
                 if(!rgUserMedRadioButton.isSelected() && !rgHealthIrregRadioButton.isSelected())
                 {
                     JOptionPane.showMessageDialog(null, "Please select a report type");
                     return;
                 }
 
-                //GET TYPE
-                String type = "";
+                //Save type of report to a variable
+                String rgReportType = "";
                 if(rgUserMedRadioButton.isSelected())
                 {
-                    type = "UserMedicationSummary";
+                    rgReportType = "UserMedicationSummary";
                 }
                 else if(rgHealthIrregRadioButton.isSelected())
                 {
-                    type = "HealthIrregularitiesSummary";
+                    rgReportType = "HealthIrregularitiesSummary";
                 }
 
-                //GET YEAR/MONTH
-                Integer year = null;
-                Integer month = null;
+                //Save the year and/or month from user input to a variable
+                int rgReportYear = 0;
+                int rgReportMonth = 0;
 
+                //ENFORCE USER INPUT TO BE NUMBERS
+                //CHECK USER INPUT
                 try
                 {
                     if(rgYearCheckBox.isSelected())
                     {
                         if(rgYearTextBox.getText().isEmpty())
                         {
-                            JOptionPane.showMessageDialog(null, "Enter a year");
+                            JOptionPane.showMessageDialog(null, "Please enter a year");
                             return;
                         }
-                        year = Integer.parseInt(rgYearTextBox.getText());
+
+                        //Save year input
+                        rgReportYear = Integer.parseInt(rgYearTextBox.getText().trim());
+
                     }
 
                     if(rgMonthCheckBox.isSelected())
                     {
                         if(rgMonthTextBox.getText().isEmpty())
                         {
-                            JOptionPane.showMessageDialog(null, "Enter a month");
+                            JOptionPane.showMessageDialog(null, "Please enter a month");
                             return;
                         }
-                        month = Integer.parseInt(rgMonthTextBox.getText());
+
+                        //Save month input
+                        rgReportMonth = Integer.parseInt(rgMonthTextBox.getText().trim());
+
                     }
                 }
                 catch(NumberFormatException ex)
                 {
-                    JOptionPane.showMessageDialog(null, "Year and Month must be numbers");
-                    return;
+                    JOptionPane.showMessageDialog(null, "Please enter Year and Month input must as numbers");
                 }
 
-                //CALL DAO
-                ReportDAO rDAO = new ReportDAO();
-                List<Report> reports = rDAO.generateReport(type, year, month);
-
-                //CLEAR TABLE
-                rgLeftTableModel.setRowCount(0);
-
-                //DISPLAY DATA
-                for(Report r : reports)
+                //CALL METHODS TO CREATE AND STORE REPORTS IN DATABASE
+                if(rgReportType.equals("UserMedicationSummary"))
                 {
-                    rgLeftTableModel.addRow(new Object[]
-                            {
-                                    r.getReportID(),
-                                    r.getType(),
-                                    r.getGeneratedAt(),
-                                    r.getContent()
-                            });
+                    generateReportUMS(rgReportYear, rgReportMonth);
+                    JOptionPane.showMessageDialog(null, "Report has been created");
                 }
-
-                if(reports.isEmpty())
+                else if(rgReportType.equals("HealthIrregularitiesSummary"))
                 {
-                    JOptionPane.showMessageDialog(null, "No reports were found");
+                    generateReportHIS(rgReportYear, rgReportMonth);
+                    JOptionPane.showMessageDialog(null, "Report has been created");
                 }
             }
         });
@@ -1994,6 +2937,10 @@ public class ManagerMenuWindow
         rgsTableModel = new DefaultTableModel();
         rgsResultTable.setModel(rgsTableModel);
 
+        //Enable textboxes based on user input
+        rgsYearTextBox.setEnabled(rgsYearCheckBox.isSelected());
+        rgsMonthTextbox.setEnabled(rgsMonthCheckBox.isSelected());
+
 
         //CLEAR INPUT BUTTON
         rgsClearButton.addActionListener(new ActionListener()
@@ -2001,50 +2948,145 @@ public class ManagerMenuWindow
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                rgsSearchTextBox.setText("");
+                rgsHealthIrregularitiesSummaryRadioButton.setSelected(false);
+                rgsUserMedicationSummaryRadioButton.setSelected(false);
+                rgsYearCheckBox.setSelected(false);
+                rgsMonthCheckBox.setSelected(false);
+                rgsYearTextBox.setText("");
+                rgsMonthTextbox.setText("");
                 rgsListModel.clear();
                 rgsTableModel.setRowCount(0);
                 rgsTableModel.setColumnCount(0);
             }
         });
 
-        //SEARCH REPORTS BY YEAR BUTTON
+        //SEARCH REPORTS
         rgsSearchButton.addActionListener(new ActionListener()
         {
             @Override
             public void actionPerformed(ActionEvent e)
             {
-                //CHECK FOR INPUT
-                if(rgsSearchTextBox.getText().isEmpty())
+                //Get report type, year, and month from user's input
+                String reportType = "";
+                int inputYear = 0;
+                int inputMonth = 0;
+
+                //Get a list of reports depending on type selected (AND CHECK USER INPUT)
+                if(rgsUserMedicationSummaryRadioButton.isSelected())
                 {
-                    JOptionPane.showMessageDialog(null, "Please enter a year");
+                    reportType = "UserMedicationSummary";
+                }
+                else if(rgsHealthIrregularitiesSummaryRadioButton.isSelected())
+                {
+                    reportType = "HealthIrregularitiesSummary";
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "Please select a report type");
+                    return;
                 }
 
-                //COLLECT YEAR INPUT
-                String inputYear = rgsSearchTextBox.getText();
+                //Grab user input (ENFORCE DATE INPUT)
+                try
+                {
+                    if(rgsYearCheckBox.isSelected())
+                    {
+                        inputYear = Integer.parseInt(rgsYearTextBox.getText().trim());
+                    }
 
-                //CREATE DAO TO ACCESS REPORT OBJECT DATA
+                    if(rgsMonthCheckBox.isSelected())
+                    {
+                        inputMonth = Integer.parseInt(rgsMonthTextbox.getText().trim());
+                    }
+                }
+                catch(NumberFormatException ex)
+                {
+                    JOptionPane.showMessageDialog(null, "Date input must be numbers");
+                    return;
+                }
+
+                //Convert type (Integer can be null)
+                Integer reportYear = (inputYear != 0) ? inputYear : null;
+                Integer reportMonth = (inputMonth != 0) ? inputMonth : null;
+
+                //Clear previous search results
+                rgsListModel.clear();
+                rgsTableModel.setRowCount(0);
+                rgsTableModel.setColumnCount(0);
+
+                //Create DAO object to access database
                 ReportDAO reportDAO = new ReportDAO();
 
+                //Declare a list of Report objects
+                List<Report> reports = reportDAO.getReportsViaUserInput(reportType, reportYear, reportMonth);
 
+                //Populate results list with Reports
+                if(reports != null && !reports.isEmpty())
+                {
+                    //Save the search results to a list to use for the results table
+                    rgsSelectionResults = reports;
 
+                    //Fill out results list using a loop
+                    for(Report r : reports)
+                    {
+                        String rgsResults =
+                                r.getReportID() + " | " +
+                                r.getType() + " | " +
+                                "Year: " + r.getYear() + " | " +
+                                "Month: " + r.getMonth();
 
+                        rgsListModel.addElement(rgsResults);
 
-
-
+                    }
+                }
+                else
+                {
+                    JOptionPane.showMessageDialog(null, "No reports were found");
+                }
             }
         });
 
-        //DISPLAY REPORT INFORMATION WHEN ITEM FROM LIST IS SELECTED
-        rgsResultList.addMouseListener(new MouseAdapter()
+        //DISPLAY REPORT DETAILS ON USER SELECTION IN A TABLE
+        rgsResultList.addListSelectionListener(new ListSelectionListener()
         {
             @Override
-            public void mouseClicked(MouseEvent e)
+            public void valueChanged(ListSelectionEvent e)
             {
-                super.mouseClicked(e);
+                //Check is user is in the middle of a current action
+                if(!e.getValueIsAdjusting())
+                {
+                    //Save the selected list index to a variable
+                    int rgsSelectedIndex = rgsResultList.getSelectedIndex();
+
+                    //Load the data from the selected record into the results table
+                    if(rgsSelectedIndex != -1)
+                    {
+                        //Save the index of the selected record to pass to method
+                        Report rgsSelectedReport = rgsSelectionResults.get(rgsSelectedIndex);
+
+                        //Clear previous results
+                        rgsTableModel.setRowCount(0);
+                        rgsTableModel.setColumnCount(0);
+
+                        //Set up table model starting with headers
+                        rgsTableModel.setColumnIdentifiers
+                        (new String[]{
+                            "Report ID", "Type", "Year", "Month", "Details"
+                        });
+
+                        //Load details
+                        rgsTableModel.addRow
+                        (new Object[]{
+                            rgsSelectedReport.getReportID(),
+                            rgsSelectedReport.getType(),
+                            rgsSelectedReport.getYear(),
+                            rgsSelectedReport.getMonth(),
+                            rgsSelectedReport.getContent()
+                        });
+                    }
+                }
             }
         });
-
 
 
     }
@@ -2065,7 +3107,7 @@ public class ManagerMenuWindow
         menuCardLayout.show(rootPanel, "MAIN_MENU");
         managerMenuWindowFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         managerMenuWindowFrame.setTitle("Care Ops | Main Menu");
-        managerMenuWindowFrame.setSize(1000, 950);
+        managerMenuWindowFrame.setSize(1500, 1000);
         managerMenuWindowFrame.setLocationRelativeTo(null);
         managerMenuWindowFrame.setVisible(true);
 
