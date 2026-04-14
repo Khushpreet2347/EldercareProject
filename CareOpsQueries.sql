@@ -91,7 +91,7 @@ SELECT * FROM Report
 WHERE type = 'UserMedicationSummary';
 
 -- vital signs
-SELECT h.HCN, v.bloodPressure, v.bloodSugar, v.temperature, v.heartRate
+SELECT h.HCN, v.systolic, v.diastolic, v.temperature, v.heartRate
 FROM HealthRecord h
 JOIN VitalSigns v ON h.recordID = v.recordID;
 
